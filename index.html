@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pattern Grading Request</title>
     <style>
+        /* All existing styles remain unchanged */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -552,6 +553,165 @@
         .grading-table-container.drag-active {
             position: relative;
         }
+        
+        /* PDF Preview and Download Styles */
+        .pdf-preview-container {
+            display: none;
+            margin-top: 30px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .pdf-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #b71c1c;
+        }
+        
+        .pdf-preview-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #b71c1c;
+        }
+        
+        .pdf-preview-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .pdf-preview-btn {
+            padding: 10px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .pdf-preview-btn.download {
+            background-color: #b71c1c;
+            color: white;
+        }
+        
+        .pdf-preview-btn.close {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        
+        .pdf-preview-content {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fdeaea;
+        }
+        
+        .pdf-preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        .pdf-preview-table th {
+            background-color: #b71c1c;
+            color: white;
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #b71c1c;
+            font-weight: bold;
+        }
+        
+        .pdf-preview-table td {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #b71c1c;
+            background-color: #fdeaea;
+        }
+        
+        .pdf-preview-table .pom-number {
+            background-color: #e0e0e0;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .pdf-preview-table .pom-name {
+            background-color: #fdeaea;
+            font-weight: bold;
+            text-align: left;
+            padding-left: 10px;
+        }
+        
+        .pdf-preview-table .base-size {
+            background-color: #ffe0b2;
+            font-weight: bold;
+        }
+        
+        /* Fixed left columns for PDF preview */
+        .pdf-preview-table th:first-child,
+        .pdf-preview-table td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            border-right: 2px solid #b71c1c;
+        }
+        
+        .pdf-preview-table th:nth-child(2),
+        .pdf-preview-table td:nth-child(2) {
+            position: sticky;
+            left: 60px; /* Width of first column */
+            z-index: 10;
+            border-right: 2px solid #b71c1c;
+        }
+        
+        /* Print styles for PDF download */
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: white;
+            }
+            
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+            
+            .chart-background {
+                background-color: white;
+                padding: 0;
+                border-radius: 0;
+            }
+            
+            .chart-header-inside {
+                background-color: #fdeaea;
+                padding: 15px;
+                border-radius: 0;
+                margin-bottom: 15px;
+            }
+            
+            .btn-group, .grade-rule-controls, .note {
+                display: none !important;
+            }
+            
+            .pdf-preview-table {
+                font-size: 10px;
+            }
+            
+            .pdf-preview-table th, .pdf-preview-table td {
+                padding: 6px;
+            }
+            
+            .pdf-preview-table .pom-name {
+                padding-left: 6px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -679,14 +839,47 @@
                         <path d="M3 6h18v2H3V6zm2 3h14v12H5V9zm3 3v6h2v-6H8zm4 0v6h2v-6h-2z"></path>
                     </svg> CLEAR ALL
                 </button>
-                <button class="btn" onclick="showRequestForm()">
+                <button class="btn" onclick="resetPoms()">
                     <svg viewbox="0 0 24 24" class="icon">
-                        <circle fill="none" stroke-width="2" stroke="white" r="10" cy="12" cx="12"></circle>
-                        <path fill="none" stroke-width="2" stroke="white" d="M8 12l3 3 5-6"></path>
-                    </svg> GENERATE REQUEST
+                        <path d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"></path>
+                    </svg> RESET POMS
+                </button>
+                <button class="btn" onclick="showPdfPreview()">
+                    <svg viewbox="0 0 24 24" class="icon">
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"></path>
+                    </svg> PDF PREVIEW
+                </button>
+                <button class="btn" onclick="downloadPdf()">
+                    <svg viewbox="0 0 24 24" class="icon">
+                        <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"></path>
+                    </svg> DOWNLOAD PDF
                 </button>
             </div>
             <div class="note" id="base-size-note">Note: Base size is highlighted in orange. Drag POMs using the cross bar (≡) to reorder them.</div>
+        </div>
+        
+        <!-- PDF Preview Container -->
+        <div class="pdf-preview-container" id="pdf-preview">
+            <div class="pdf-preview-header">
+                <div class="pdf-preview-title">Pattern Grading Request - PDF Preview</div>
+                <div class="pdf-preview-actions">
+                    <button class="pdf-preview-btn download" onclick="downloadPdf()">
+                        <svg viewbox="0 0 24 24" width="16" height="16" fill="white">
+                            <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"></path>
+                        </svg>
+                        Download PDF
+                    </button>
+                    <button class="pdf-preview-btn close" onclick="closePdfPreview()">
+                        <svg viewbox="0 0 24 24" width="16" height="16" fill="currentColor">
+                            <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path>
+                        </svg>
+                        Close
+                    </button>
+                </div>
+            </div>
+            <div class="pdf-preview-content" id="pdf-preview-content">
+                <!-- PDF preview content will be generated here -->
+            </div>
         </div>
     </div>
 
@@ -896,6 +1089,73 @@
                 'SLV LGHT CB.', 'AH DROP FM SH SLANT', 'THIGHT 1" BLW CROT',
                 'KNEE ( )BLW CROT', 'LEG OPENING', 'FRT RISE', 'BCK RISE', 'INSEAM',
                 'BOOT SIZE', 'BOOT OPEN.', 'BOOT HEIGHT', 'INSOLE LGHT', 'INSOLE WIDHT'
+            ]
+        };
+
+        // Core POMs for each garment type (essential measurements for grading)
+        const CORE_POMS = {
+            'tops': [
+                'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
+                'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
+                'SLV LGHT CB.', 'AH CIR.'
+            ],
+            'shirts': [
+                'CHEST 1" BLW AH', 'WAIST', 'BTM HEM/HIP',
+                'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
+                'SLV LGHT CB.', 'AH CIR.'
+            ],
+            'jackets': [
+                'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
+                'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
+                'SLV LGHT CB.', 'AH CIR.'
+            ],
+            'outerwear': [
+                'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
+                'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
+                'SLV LGHT CB.', 'AH CIR.'
+            ],
+            'pants': [
+                'CONT. WB', 'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) UP CROT',
+                'THIGHT 1" BLW CROT', 'KNEE ( ) BLW CROT', 'LEG OPENING',
+                'FRT RISE', 'BCK RISE', 'INSEAM'
+            ],
+            'dresses': [
+                'HPS TO BTM HEM', 'BUST 1" BLW AH', 'Waist CIR.',
+                'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) BLW WB', 'AH CIR.',
+                'SH WIDTH', 'SLV LGTH Frm SH SEAM'
+            ],
+            'shorts': [
+                'CONT. WB', 'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) UP CROT',
+                'THIGHT 1" BLW CROT', 'LEG OPENING', 'FRT RISE',
+                'BCK RISE', 'INSEAM'
+            ],
+            'skirts': [
+                'CONT. WB', 'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) BLW WB',
+                'S. SEAM LGTH', 'HEM SWEEP'
+            ],
+            'underwear': [
+                'ELASTIC WAIST LGHT', 'WAIST BLW WB', 'HIPS',
+                'S SEAM LGHT BLW WB', 'LEG OPEN.', 'FRT RISE', 'BCK RISE'
+            ],
+            'bodysuit': [
+                'CUP', 'BUST', 'WAIST', 'HIP', 'S SEAM LGHT',
+                'SH LGHT', 'SLV LGHT CB.', 'AH CIR.'
+            ],
+            'bikini': [
+                'CUP', 'BUST', 'WAIST', 'HIP'
+            ],
+            'bikini-set': [
+                'CUP', 'BUST', 'WAIST', 'HIP'
+            ],
+            'overall': [
+                'MAX. STRAP LGHT', 'BIB LGHT', 'WAIST',
+                'HIGH HIP ( ) BLW WB', 'THIGHT 1" BLW CROT',
+                'LEG OPENING', 'FRT RISE', 'BCK RISE', 'INSEAM'
+            ],
+            'coverall': [
+                'TOTAL LEGHT', 'CHEST 1" BLW AH', 'WAIST',
+                'HIGH HIP ( ) BLW WB', 'SLV LGHT CB.',
+                'THIGHT 1" BLW CROT', 'LEG OPENING', 'FRT RISE', 'BCK RISE', 'INSEAM'
             ]
         };
 
@@ -1179,11 +1439,49 @@
             const pomsToAdd = Array.from(checkboxes).map(cb => cb.value);
             
             if (pomsToAdd.length > 0) {
+                // Get current measurements to preserve them
+                const currentMeasurements = {};
+                const rows = document.querySelectorAll('#grading-tbody tr');
+                
+                rows.forEach(row => {
+                    const pomName = row.getAttribute('data-pom');
+                    const measurements = {};
+                    
+                    // Get all size measurements for this POM
+                    const sizeCells = row.querySelectorAll('td[data-size]');
+                    sizeCells.forEach(cell => {
+                        const size = cell.getAttribute('data-size');
+                        const input = cell.querySelector('input');
+                        if (input) {
+                            measurements[size] = input.value;
+                        }
+                    });
+                    
+                    currentMeasurements[pomName] = measurements;
+                });
+                
                 // Add selected POMs to current POMs
                 currentPoms = [...currentPoms, ...pomsToAdd];
                 
                 // Rebuild the table
                 rebuildPomTable();
+                
+                // Restore measurements for existing POMs
+                const newRows = document.querySelectorAll('#grading-tbody tr');
+                newRows.forEach(row => {
+                    const pomName = row.getAttribute('data-pom');
+                    
+                    if (currentMeasurements[pomName]) {
+                        const sizeCells = row.querySelectorAll('td[data-size]');
+                        sizeCells.forEach(cell => {
+                            const size = cell.getAttribute('data-size');
+                            const input = cell.querySelector('input');
+                            if (input && currentMeasurements[pomName][size]) {
+                                input.value = currentMeasurements[pomName][size];
+                            }
+                        });
+                    }
+                });
                 
                 // Close the modal
                 closeAddPomModal();
@@ -1195,11 +1493,49 @@
         function addAllPoms() {
             const allPoms = GARMENT_POMS[currentGarmentType] || [];
             
+            // Get current measurements to preserve them
+            const currentMeasurements = {};
+            const rows = document.querySelectorAll('#grading-tbody tr');
+            
+            rows.forEach(row => {
+                const pomName = row.getAttribute('data-pom');
+                const measurements = {};
+                
+                // Get all size measurements for this POM
+                const sizeCells = row.querySelectorAll('td[data-size]');
+                sizeCells.forEach(cell => {
+                    const size = cell.getAttribute('data-size');
+                    const input = cell.querySelector('input');
+                    if (input) {
+                        measurements[size] = input.value;
+                    }
+                });
+                
+                currentMeasurements[pomName] = measurements;
+            });
+            
             // Add all POMs to current POMs
             currentPoms = [...new Set([...currentPoms, ...allPoms])];
             
             // Rebuild the table
             rebuildPomTable();
+            
+            // Restore measurements for existing POMs
+            const newRows = document.querySelectorAll('#grading-tbody tr');
+            newRows.forEach(row => {
+                const pomName = row.getAttribute('data-pom');
+                
+                if (currentMeasurements[pomName]) {
+                    const sizeCells = row.querySelectorAll('td[data-size]');
+                    sizeCells.forEach(cell => {
+                        const size = cell.getAttribute('data-size');
+                        const input = cell.querySelector('input');
+                        if (input && currentMeasurements[pomName][size]) {
+                            input.value = currentMeasurements[pomName][size];
+                        }
+                    });
+                }
+            });
             
             // Close the modal
             closeAddPomModal();
@@ -1210,11 +1546,49 @@
             const customPomName = customPomInput.value.trim();
             
             if (customPomName) {
+                // Get current measurements to preserve them
+                const currentMeasurements = {};
+                const rows = document.querySelectorAll('#grading-tbody tr');
+                
+                rows.forEach(row => {
+                    const pomName = row.getAttribute('data-pom');
+                    const measurements = {};
+                    
+                    // Get all size measurements for this POM
+                    const sizeCells = row.querySelectorAll('td[data-size]');
+                    sizeCells.forEach(cell => {
+                        const size = cell.getAttribute('data-size');
+                        const input = cell.querySelector('input');
+                        if (input) {
+                            measurements[size] = input.value;
+                        }
+                    });
+                    
+                    currentMeasurements[pomName] = measurements;
+                });
+                
                 // Add custom POM to current POMs
                 currentPoms.push(customPomName);
                 
                 // Rebuild the table
                 rebuildPomTable();
+                
+                // Restore measurements for existing POMs
+                const newRows = document.querySelectorAll('#grading-tbody tr');
+                newRows.forEach(row => {
+                    const pomName = row.getAttribute('data-pom');
+                    
+                    if (currentMeasurements[pomName]) {
+                        const sizeCells = row.querySelectorAll('td[data-size]');
+                        sizeCells.forEach(cell => {
+                            const size = cell.getAttribute('data-size');
+                            const input = cell.querySelector('input');
+                            if (input && currentMeasurements[pomName][size]) {
+                                input.value = currentMeasurements[pomName][size];
+                            }
+                        });
+                    }
+                });
                 
                 // Clear the input and close the modal
                 customPomInput.value = '';
@@ -1256,6 +1630,60 @@
             
             // Re-initialize drag and drop
             initializeDragAndDrop();
+        }
+
+        // --- Reset POMs Function ---
+        
+        function resetPoms() {
+            const garmentType = document.getElementById('garment-type').value;
+            const corePoms = CORE_POMS[garmentType] || [];
+            
+            // Get current measurements to preserve them
+            const currentMeasurements = {};
+            const rows = document.querySelectorAll('#grading-tbody tr');
+            
+            rows.forEach(row => {
+                const pomName = row.getAttribute('data-pom');
+                const measurements = {};
+                
+                // Get all size measurements for this POM
+                const sizeCells = row.querySelectorAll('td[data-size]');
+                sizeCells.forEach(cell => {
+                    const size = cell.getAttribute('data-size');
+                    const input = cell.querySelector('input');
+                    if (input) {
+                        measurements[size] = input.value;
+                    }
+                });
+                
+                currentMeasurements[pomName] = measurements;
+            });
+            
+            // Reset to core POMs
+            currentPoms = [...corePoms];
+            
+            // Rebuild the table
+            rebuildPomTable();
+            
+            // Restore measurements for POMs that exist in both old and new lists
+            const newRows = document.querySelectorAll('#grading-tbody tr');
+            newRows.forEach(row => {
+                const pomName = row.getAttribute('data-pom');
+                
+                if (currentMeasurements[pomName]) {
+                    const sizeCells = row.querySelectorAll('td[data-size]');
+                    sizeCells.forEach(cell => {
+                        const size = cell.getAttribute('data-size');
+                        const input = cell.querySelector('input');
+                        if (input && currentMeasurements[pomName][size]) {
+                            input.value = currentMeasurements[pomName][size];
+                        }
+                    });
+                }
+            });
+            
+            // Show confirmation message
+            alert(`POMs reset to core measurements for ${garmentType.toUpperCase()}. Your existing measurements have been preserved where possible.`);
         }
 
         // --- Drag and Drop Functionality ---
@@ -1613,6 +2041,324 @@
             });
         }
 
+        // --- PDF Preview and Download Functions ---
+
+        function showPdfPreview() {
+            const pdfPreview = document.getElementById('pdf-preview');
+            const pdfPreviewContent = document.getElementById('pdf-preview-content');
+            
+            // Generate the preview content
+            pdfPreviewContent.innerHTML = generatePdfPreviewContent();
+            
+            // Show the preview
+            pdfPreview.style.display = 'block';
+            
+            // Scroll to the preview
+            pdfPreview.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function closePdfPreview() {
+            const pdfPreview = document.getElementById('pdf-preview');
+            pdfPreview.style.display = 'none';
+        }
+
+        function generatePdfPreviewContent() {
+            const garmentType = document.getElementById('garment-type').value;
+            const styleName = document.getElementById('style-name').textContent;
+            const sizeCategory = document.getElementById('size-category').value;
+            const baseSize = document.getElementById('base-size-select').value;
+            const gradeRule = document.getElementById('grade-rule').value;
+            const gradingDirection = document.getElementById('grading-direction').value;
+            
+            // Get all size headers
+            const headerCells = document.querySelectorAll('#grading-table thead th[data-size]');
+            const sizes = Array.from(headerCells).map(th => th.getAttribute('data-size'));
+            
+            // Get all POM rows
+            const pomRows = document.querySelectorAll('#grading-tbody tr');
+            
+            // Create the preview table
+            let html = `
+                <div style="margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border-radius: 4px;">
+                    <div><strong>Garment Type:</strong> ${garmentType.toUpperCase()}</div>
+                    <div><strong>Style Name:</strong> ${styleName}</div>
+                    <div><strong>Size Category:</strong> ${SIZE_CATEGORY_NAMES[sizeCategory] || sizeCategory}</div>
+                    <div><strong>Base Size:</strong> ${baseSize}</div>
+                    <div><strong>Grade Rule:</strong> ${gradeRule === 'custom' ? document.getElementById('custom-grade-value').value + ' inches' : gradeRule + ' inches'}</div>
+                    <div><strong>Grading Direction:</strong> ${gradingDirection}</div>
+                </div>
+                <table class="pdf-preview-table">
+                    <thead>
+                        <tr>
+                            <th>POM #</th>
+                            <th>Measurement Points</th>
+            `;
+            
+            // Add size headers
+            sizes.forEach(size => {
+                const isBaseSize = size === baseSize;
+                html += `<th class="${isBaseSize ? 'base-size' : ''}">${size}</th>`;
+            });
+            
+            html += `</tr></thead><tbody>`;
+            
+            // Add POM rows
+            pomRows.forEach((row, index) => {
+                const pomNumber = row.cells[0].textContent;
+                const pomName = row.getAttribute('data-pom');
+                
+                html += `<tr>
+                    <td class="pom-number">${pomNumber}</td>
+                    <td class="pom-name">${pomName}</td>`;
+                
+                // Add measurement values for each size
+                for (let i = 2; i < row.cells.length; i++) {
+                    const size = sizes[i-2];
+                    const input = row.cells[i].querySelector('input');
+                    const value = input ? input.value : '';
+                    const isBaseSize = size === baseSize;
+                    
+                    html += `<td class="${isBaseSize ? 'base-size' : ''}">${value}</td>`;
+                }
+                
+                html += `</tr>`;
+            });
+            
+            html += `</tbody></table>`;
+            
+            return html;
+        }
+
+        function downloadPdf() {
+            // Create a printable version of the grading chart
+            const printContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Pattern Grading Request</title>
+                    <meta charset="UTF-8">
+                    <style>
+                        body { 
+                            font-family: Arial, sans-serif; 
+                            margin: 0; 
+                            padding: 20px; 
+                            background-color: white;
+                            color: #333;
+                        }
+                        .container {
+                            max-width: 1100px;
+                            margin: 0 auto;
+                        }
+                        .chart-background {
+                            background-color: #c62828;
+                            padding: 30px;
+                            border-radius: 10px;
+                        }
+                        .chart-header-inside {
+                            background-color: #fdeaea;
+                            padding: 20px;
+                            border-radius: 10px;
+                            text-align: center;
+                            margin-bottom: 20px;
+                        }
+                        .chart-header-inside h1 {
+                            color: #b71c1c;
+                            font-size: 24px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 12px;
+                            margin: 0;
+                        }
+                        .chart-header-inside p {
+                            font-size: 14px;
+                            color: #5d1f1f;
+                            margin-top: 8px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 10px;
+                        }
+                        th {
+                            background-color: #b71c1c;
+                            color: white;
+                            padding: 12px;
+                            font-weight: bold;
+                            border: 1px solid #b71c1c;
+                        }
+                        td {
+                            padding: 10px;
+                            text-align: center;
+                            background-color: #fdeaea;
+                            border: 1px solid #b71c1c;
+                        }
+                        .info-table td {
+                            padding: 0;
+                            text-align: center;
+                            border: 1px solid white;
+                        }
+                        .info-label {
+                            background-color: #b71c1c;
+                            color: white;
+                            font-weight: bold;
+                            padding: 12px;
+                        }
+                        .info-stack {
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            align-items: center;
+                            background-color: #fdeaea;
+                            border: 1px solid #b71c1c;
+                            height: 100%;
+                            font-weight: bold;
+                            position: relative;
+                        }
+                        .pom-number-cell {
+                            background-color: #e0e0e0;
+                            font-weight: bold;
+                            text-align: center;
+                            width: 60px;
+                            border-left: 2px solid #b71c1c !important;
+                        }
+                        .pom-name-cell {
+                            background-color: #fdeaea;
+                            font-weight: bold;
+                            text-align: left;
+                            padding-left: 15px;
+                            min-width: 200px;
+                            border-right: 2px solid #b71c1c !important;
+                            position: relative;
+                        }
+                        .grading-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+                        .base-size-cell {
+                            background-color: #ffe0b2 !important;
+                        }
+                        .base-size-cell input {
+                            background-color: #ffe0b2 !important;
+                            color: #b71c1c;
+                            border-color: #b71c1c;
+                            font-weight: bold;
+                        }
+                        .note {
+                            margin-top: 20px;
+                            font-style: italic;
+                            color: white;
+                            text-align: center;
+                        }
+                        @media print {
+                            body {
+                                margin: 0;
+                                padding: 0;
+                                background-color: white;
+                            }
+                            .container {
+                                max-width: 100%;
+                                padding: 0;
+                            }
+                            .chart-background {
+                                background-color: white;
+                                padding: 0;
+                                border-radius: 0;
+                            }
+                            .chart-header-inside {
+                                background-color: #fdeaea;
+                                padding: 15px;
+                                border-radius: 0;
+                                margin-bottom: 15px;
+                            }
+                            .btn-group, .grade-rule-controls, .note {
+                                display: none !important;
+                            }
+                            .grading-table {
+                                font-size: 10px;
+                            }
+                            .grading-table th, .grading-table td {
+                                padding: 6px;
+                            }
+                            .pom-name-cell {
+                                padding-left: 6px;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="chart-background">
+                            <div class="chart-header-inside">
+                                <h1>Pattern Grading Request</h1>
+                                <p>Complete all fields before submitting or printing. Use inches (e.g. +2", -1"). Drag POMs to reorder.</p>
+                            </div>
+                            <table class="info-table">
+                                <tbody>
+                                    <tr>
+                                        <td class="info-label">GARMENT TYPE</td>
+                                        <td>
+                                            <div class="info-stack">
+                                                ${document.getElementById('garment-type').value.toUpperCase()}
+                                            </div>
+                                        </td>
+                                        <td class="info-label">STYLE NAME</td>
+                                        <td>
+                                            <div class="info-stack">
+                                                ${document.getElementById('style-name').textContent}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="info-label">SIZE CATEGORY</td>
+                                        <td>
+                                            <div class="info-stack">
+                                                ${SIZE_CATEGORY_NAMES[document.getElementById('size-category').value] || document.getElementById('size-category').value}
+                                            </div>
+                                        </td>
+                                        <td class="info-label">BASE SIZE</td>
+                                        <td>
+                                            <div class="info-stack">
+                                                ${document.getElementById('base-size-select').value}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <!-- Grade Rule Information -->
+                            <div style="margin: 15px 0; padding: 10px; background-color: #f8f8f8; border-radius: 6px;">
+                                <div><strong>Grade Rule:</strong> ${document.getElementById('grade-rule').value === 'custom' ? document.getElementById('custom-grade-value').value + ' inches' : document.getElementById('grade-rule').value + ' inches'}</div>
+                                <div><strong>Grading Direction:</strong> ${document.getElementById('grading-direction').value}</div>
+                            </div>
+                            
+                            <!-- Grading Table -->
+                            <div style="overflow-x: auto; margin-top: 20px; border: 2px solid #b71c1c; border-radius: 8px; background-color: #fdeaea;">
+                                ${document.getElementById('grading-table').outerHTML}
+                            </div>
+                            
+                            <div class="note">Note: Base size is highlighted in orange.</div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            // Create a blob and download link
+            const blob = new Blob([printContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Pattern_Grading_${document.getElementById('style-name').textContent.replace(/\s+/g, '_')}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            // Also show a message
+            alert('PDF download initiated. The file will open in a new tab where you can print it as PDF.');
+        }
+
         // --- Button Functionality ---
 
         function addSizeColumn() {
@@ -1715,19 +2461,6 @@
                     input.value = '';
                 });
             }
-        }
-
-        function showRequestForm() {
-            const garmentType = document.getElementById('garment-type').value;
-            const sizeCategory = document.getElementById('size-category').value;
-            const baseSize = document.getElementById('base-size-select').value;
-            
-            if (!garmentType || !sizeCategory || !baseSize) {
-                alert("Please select a garment type, size category, and base size before generating the request.");
-                return;
-            }
-            
-            alert("Request form would be shown here in a complete implementation.");
         }
     </script>
 </body>
