@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pattern Grading Request</title>
     <style>
-        /* All existing styles remain unchanged */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -113,6 +112,24 @@
             cursor: pointer;
         }
 
+        /* Updated Style Name field styling */
+        .info-stack #style-name {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background-color: transparent;
+            font-weight: bold;
+            padding: 12px;
+            font-size: 14px; /* Same font size as garment type */
+            text-align: center;
+            outline: none;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+        }
+
         .info-stack.dropdown-enabled::after {
             content: '';
             position: absolute;
@@ -215,6 +232,7 @@
 
         .base-size-cell {
             background-color: #ffe0b2 !important;
+            position: relative;
         }
         .base-size-cell input {
             background-color: #ffe0b2 !important;
@@ -283,15 +301,19 @@
             max-width: 80px;
         }
 
-        /* Grade rule controls */
+        /* Grade rule controls - HIDDEN BY DEFAULT */
         .grade-rule-controls {
-            display: flex;
+            display: none;
             justify-content: space-between;
             align-items: center;
             margin: 15px 0;
             padding: 10px;
             background-color: #f8f8f8;
             border-radius: 6px;
+        }
+
+        .grade-rule-controls.visible {
+            display: flex;
         }
 
         .grade-rule-controls label {
@@ -712,6 +734,80 @@
                 padding-left: 6px;
             }
         }
+
+        /* Grade rule controls for individual POMs */
+        .pom-grade-controls {
+            display: none;
+            position: absolute;
+            top: -50px;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border: 1px solid #b71c1c;
+            border-radius: 4px;
+            padding: 8px;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pom-grade-controls.visible {
+            display: flex;
+        }
+
+        .pom-grade-controls select {
+            padding: 6px;
+            border: 1px solid #b71c1c;
+            border-radius: 4px;
+            font-size: 12px;
+            flex: 1;
+        }
+
+        .pom-grade-controls .custom-grade-input {
+            display: none;
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        .pom-grade-controls .custom-grade-input input {
+            width: 100%;
+            margin-bottom: 4px;
+        }
+
+        .grade-rule-section, .direction-section {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .grade-rule-section label, .direction-section label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #b71c1c;
+        }
+
+        .apply-grade-btn {
+            background-color: #b71c1c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .apply-grade-btn:hover {
+            background-color: #8e0000;
+        }
+
+        .base-size-cell {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -723,7 +819,7 @@
                         <path d="M3 3v18h18L3 3zm3 13.5V15h1.5L15 7.5l1.5 1.5L7.5 18H6v-1.5z"></path>
                     </svg> Pattern Grading Request
                 </h1>
-                <p>Complete all fields before submitting or printing. Use inches (e.g. +2", -1"). Drag POMs to reorder.</p>
+                <p>Complete all fields before submitting or printing. Use inches (e.g. +2", -1"). Drag POMs to reorder. Enter a base size measurement to apply grading rules.</p>
             </div>
             <table class="info-table">
                 <tbody>
@@ -777,33 +873,6 @@
                 </tbody>
             </table>
             
-            <!-- Grade Rule Controls -->
-            <div class="grade-rule-controls">
-                <div>
-                    <label for="grade-rule">Select Grade Rule:</label>
-                    <select id="grade-rule" onchange="toggleCustomGradeInput(); applyGradeRuleToAllPoms()">
-                        <option value="1.0">1.0 Inch Grade</option>
-                        <option value="1.5">1.5 Inch Grade</option>
-                        <option value="2.0" selected>2.0 Inch Grade</option>
-                        <option value="3.0">3.0 Inch Grade</option>
-                        <option value="4.0">4.0 Inch Grade</option>
-                        <option value="custom">Custom Grade</option>
-                    </select>
-                    <div class="custom-grade-input" id="custom-grade-input">
-                        <input type="number" id="custom-grade-value" step="0.1" min="0.1" max="10" placeholder="0.0" onchange="applyGradeRuleToAllPoms()">
-                        <span>inches</span>
-                    </div>
-                </div>
-                <div>
-                    <label for="grading-direction">Grading Direction:</label>
-                    <select id="grading-direction" onchange="applyGradeRuleToAllPoms()">
-                        <option value="both">Both Directions</option>
-                        <option value="up">Larger Sizes Only</option>
-                        <option value="down">Smaller Sizes Only</option>
-                    </select>
-                </div>
-            </div>
-            
             <!-- Size Header Row -->
             <div class="grading-table-container" id="table-container">
                 <div class="cross-bar" id="cross-bar"></div>
@@ -846,7 +915,7 @@
                 </button>
                 <button class="btn" onclick="showPdfPreview()">
                     <svg viewbox="0 0 24 24" class="icon">
-                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"></path>
+                        <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2Z"></path>
                     </svg> PDF PREVIEW
                 </button>
                 <button class="btn" onclick="downloadPdf()">
@@ -855,7 +924,7 @@
                     </svg> DOWNLOAD PDF
                 </button>
             </div>
-            <div class="note" id="base-size-note">Note: Base size is highlighted in orange. Drag POMs using the cross bar (≡) to reorder them.</div>
+            <div class="note" id="base-size-note">Note: Base size is highlighted in orange. Drag POMs using the cross bar (≡) to reorder them. Enter a measurement in the base size column to apply grading rules.</div>
         </div>
         
         <!-- PDF Preview Container -->
@@ -1167,6 +1236,7 @@
         let currentPoms = [];
         let draggedRow = null;
         let crossBar = null;
+        let activeGradeControls = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             const sizeSelect = document.getElementById('base-size-select');
@@ -1181,11 +1251,19 @@
             // Initialize the table with default sizes
             updateSizeHeaders();
             
-            // Initialize custom grade input visibility
-            toggleCustomGradeInput();
-            
             // Get cross bar element
             crossBar = document.getElementById('cross-bar');
+            
+            // Close grade controls when clicking outside
+            document.addEventListener('click', function(e) {
+                if (activeGradeControls && !activeGradeControls.contains(e.target)) {
+                    const input = activeGradeControls.parentElement.querySelector('input');
+                    if (!input.contains(e.target)) {
+                        activeGradeControls.classList.remove('visible');
+                        activeGradeControls = null;
+                    }
+                }
+            });
         });
         
         // --- Garment Type and Size Category Management ---
@@ -1380,10 +1458,13 @@
                 const newInput = document.createElement('input');
                 newInput.type = 'text';
                 newInput.value = '';
-                // Add event listener to base size cells to auto-update when changed
+                newInput.setAttribute('data-pom', pomName);
+                newInput.setAttribute('data-size', size);
+                
+                // Add event listener to base size cells to show grade controls
                 if (size === currentBaseSize) {
-                    newInput.addEventListener('input', function() {
-                        applyGradeRuleToPomRow(newRow);
+                    newInput.addEventListener('focus', function() {
+                        showGradeControls(this);
                     });
                 }
 
@@ -1392,6 +1473,130 @@
             });
             
             return newRow;
+        }
+
+        // --- Grade Controls Functions ---
+        
+        function showGradeControls(inputElement) {
+            // Hide any existing controls
+            hideGradeControls();
+            
+            // Create controls element
+            const controls = document.createElement('div');
+            controls.className = 'pom-grade-controls';
+            controls.innerHTML = `
+                <div class="grade-rule-section">
+                    <label>Grade Rule:</label>
+                    <select class="pom-grade-rule" onchange="toggleCustomGradeInputForPom(this)">
+                        <option value="1.0">1.0 Inch</option>
+                        <option value="1.5">1.5 Inch</option>
+                        <option value="2.0" selected>2.0 Inch</option>
+                        <option value="3.0">3.0 Inch</option>
+                        <option value="4.0">4.0 Inch</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                    <div class="custom-grade-input pom-custom-grade" style="display: none;">
+                        <input type="number" class="pom-custom-grade-value" step="0.1" min="0.1" max="10" placeholder="0.0">
+                        <span>inches</span>
+                    </div>
+                </div>
+                <div class="direction-section">
+                    <label>Direction:</label>
+                    <select class="pom-grade-direction">
+                        <option value="both">Both Directions</option>
+                        <option value="up">Larger Sizes Only</option>
+                        <option value="down">Smaller Sizes Only</option>
+                    </select>
+                </div>
+                <button class="apply-grade-btn" onclick="applyGradeRuleToPom(this)">Apply</button>
+            `;
+            
+            // Position and show controls
+            const cell = inputElement.parentElement;
+            cell.appendChild(controls);
+            controls.classList.add('visible');
+            activeGradeControls = controls;
+        }
+        
+        function hideGradeControls() {
+            if (activeGradeControls) {
+                activeGradeControls.classList.remove('visible');
+                activeGradeControls.remove();
+                activeGradeControls = null;
+            }
+        }
+        
+        function toggleCustomGradeInputForPom(selectElement) {
+            const controls = selectElement.closest('.pom-grade-controls');
+            const customInput = controls.querySelector('.pom-custom-grade');
+            
+            if (selectElement.value === 'custom') {
+                customInput.style.display = 'block';
+            } else {
+                customInput.style.display = 'none';
+            }
+        }
+        
+        function applyGradeRuleToPom(buttonElement) {
+            const controls = buttonElement.closest('.pom-grade-controls');
+            const inputElement = controls.parentElement.querySelector('input');
+            const pomName = inputElement.getAttribute('data-pom');
+            const baseSize = inputElement.getAttribute('data-size');
+            const baseValue = parseFloat(inputElement.value);
+            
+            if (isNaN(baseValue)) {
+                alert('Please enter a valid measurement value');
+                return;
+            }
+            
+            // Get the grade rule and direction
+            const gradeRuleSelect = controls.querySelector('.pom-grade-rule');
+            const directionSelect = controls.querySelector('.pom-grade-direction');
+            
+            let increment;
+            if (gradeRuleSelect.value === 'custom') {
+                const customValue = parseFloat(controls.querySelector('.pom-custom-grade-value').value);
+                increment = isNaN(customValue) ? 2.0 : customValue;
+            } else {
+                increment = parseFloat(gradeRuleSelect.value);
+            }
+            
+            const direction = directionSelect.value;
+            
+            // Find the row
+            const row = inputElement.closest('tr');
+            
+            // Apply grading to all sizes in this row
+            const headerCells = document.querySelectorAll('#grading-table thead th[data-size]');
+            const sizes = Array.from(headerCells).map(th => th.getAttribute('data-size'));
+            const baseSizeIndex = sizes.indexOf(baseSize);
+            
+            if (baseSizeIndex === -1) return;
+            
+            // Calculate increments for each size
+            sizes.forEach((size, index) => {
+                if (index === baseSizeIndex) return; // Skip base size
+                
+                const sizeCell = row.cells[index + 2]; // +2 because of POM number and name columns
+                const sizeInput = sizeCell.querySelector('input');
+                
+                // Calculate the difference in position from base size
+                const diff = index - baseSizeIndex;
+                
+                // Apply grading based on direction
+                if ((direction === 'both') || 
+                    (direction === 'up' && diff > 0) || 
+                    (direction === 'down' && diff < 0)) {
+                    
+                    const gradedValue = baseValue + (diff * increment);
+                    
+                    // Format the value (add + for positive increments)
+                    sizeInput.value = gradedValue > 0 ? `+${gradedValue.toFixed(1)}"` : `${gradedValue.toFixed(1)}"`;
+                }
+            });
+            
+            // Hide the controls after applying
+            hideGradeControls();
         }
 
         // --- POM Management Functions ---
@@ -1624,9 +1829,6 @@
             
             // Apply base size styling
             updateBaseSizeVisual();
-            
-            // Re-apply grade rules
-            applyGradeRuleToAllPoms();
             
             // Re-initialize drag and drop
             initializeDragAndDrop();
@@ -1900,6 +2102,16 @@
                     const newInput = document.createElement('input');
                     newInput.type = 'text';
                     newInput.value = '';
+                    newInput.setAttribute('data-pom', tr.getAttribute('data-pom'));
+                    newInput.setAttribute('data-size', sizeValue);
+                    
+                    // Add event listener to base size cells to show grade controls
+                    if (sizeValue === currentBaseSize) {
+                        newInput.addEventListener('focus', function() {
+                            showGradeControls(this);
+                        });
+                    }
+
                     newTd.appendChild(newInput);
                     tr.appendChild(newTd);
                 });
@@ -1911,8 +2123,6 @@
         function changeBaseSize(event) {
             currentBaseSize = event.target.value;
             updateBaseSizeVisual();
-            // Re-apply grade rule when base size changes
-            applyGradeRuleToAllPoms();
         }
 
         function updateBaseSizeVisual() {
@@ -1925,10 +2135,8 @@
                 td.classList.remove('base-size-cell');
                 const input = td.querySelector('input');
                 if (input) {
-                    // Remove readonly attribute to allow user input
-                    input.removeAttribute('readonly');
                     // Remove any existing event listeners
-                    input.oninput = null;
+                    input.onfocus = null;
                 }
             });
 
@@ -1950,9 +2158,9 @@
                         baseCell.classList.add('base-size-cell');
                         const input = baseCell.querySelector('input');
                         if (input) {
-                            // Add event listener to auto-update when base size value changes
-                            input.addEventListener('input', function() {
-                                applyGradeRuleToPomRow(row);
+                            // Add event listener to show grade controls when focused
+                            input.addEventListener('focus', function() {
+                                showGradeControls(this);
                             });
                         }
                     }
@@ -1961,84 +2169,7 @@
 
             // 4. Update the note
             const baseSizeText = document.getElementById('base-size-select').options[document.getElementById('base-size-select').selectedIndex]?.textContent || currentBaseSize;
-            note.textContent = `Note: Base size (${baseSizeText}) is highlighted in orange. Drag POMs using the cross bar (≡) to reorder them.`;
-        }
-
-        // --- Grade Rule Functions ---
-
-        function toggleCustomGradeInput() {
-            const gradeRuleSelect = document.getElementById('grade-rule');
-            const customGradeInput = document.getElementById('custom-grade-input');
-            
-            if (gradeRuleSelect.value === 'custom') {
-                customGradeInput.style.display = 'inline-block';
-            } else {
-                customGradeInput.style.display = 'none';
-            }
-            
-            // Auto-apply the new grade rule
-            applyGradeRuleToAllPoms();
-        }
-
-        function getGradeIncrement() {
-            const gradeRuleSelect = document.getElementById('grade-rule');
-            
-            if (gradeRuleSelect.value === 'custom') {
-                const customValue = parseFloat(document.getElementById('custom-grade-value').value);
-                return isNaN(customValue) ? 2.0 : customValue;
-            }
-            
-            return parseFloat(gradeRuleSelect.value);
-        }
-
-        // --- Auto-Grading Functions ---
-
-        function applyGradeRuleToPomRow(row) {
-            const headerCells = document.querySelectorAll('#grading-table thead th[data-size]');
-            const sizes = Array.from(headerCells).map(th => th.getAttribute('data-size'));
-            const baseSizeIndex = sizes.indexOf(currentBaseSize);
-            
-            if (baseSizeIndex === -1) return;
-            
-            // Get the base size value
-            const baseSizeCell = row.cells[baseSizeIndex + 2]; // +2 because of POM number and name columns
-            const baseSizeInput = baseSizeCell.querySelector('input');
-            const baseValue = parseFloat(baseSizeInput.value);
-            
-            if (isNaN(baseValue)) return;
-            
-            // Get grading direction and increment
-            const direction = document.getElementById('grading-direction').value;
-            const increment = getGradeIncrement();
-            
-            // Calculate increments for each size
-            sizes.forEach((size, index) => {
-                if (index === baseSizeIndex) return; // Skip base size
-                
-                const sizeCell = row.cells[index + 2];
-                const sizeInput = sizeCell.querySelector('input');
-                
-                // Calculate the difference in position from base size
-                const diff = index - baseSizeIndex;
-                
-                // Apply grading based on direction
-                if ((direction === 'both') || 
-                    (direction === 'up' && diff > 0) || 
-                    (direction === 'down' && diff < 0)) {
-                    
-                    const gradedValue = baseValue + (diff * increment);
-                    
-                    // Format the value (add + for positive increments)
-                    sizeInput.value = gradedValue > 0 ? `+${gradedValue.toFixed(1)}"` : `${gradedValue.toFixed(1)}"`;
-                }
-            });
-        }
-
-        function applyGradeRuleToAllPoms() {
-            const rows = document.querySelectorAll('#grading-tbody tr');
-            rows.forEach(row => {
-                applyGradeRuleToPomRow(row);
-            });
+            note.textContent = `Note: Base size (${baseSizeText}) is highlighted in orange. Drag POMs using the cross bar (≡) to reorder them. Click on a base size measurement to apply grading rules.`;
         }
 
         // --- PDF Preview and Download Functions ---
@@ -2067,8 +2198,6 @@
             const styleName = document.getElementById('style-name').textContent;
             const sizeCategory = document.getElementById('size-category').value;
             const baseSize = document.getElementById('base-size-select').value;
-            const gradeRule = document.getElementById('grade-rule').value;
-            const gradingDirection = document.getElementById('grading-direction').value;
             
             // Get all size headers
             const headerCells = document.querySelectorAll('#grading-table thead th[data-size]');
@@ -2084,8 +2213,6 @@
                     <div><strong>Style Name:</strong> ${styleName}</div>
                     <div><strong>Size Category:</strong> ${SIZE_CATEGORY_NAMES[sizeCategory] || sizeCategory}</div>
                     <div><strong>Base Size:</strong> ${baseSize}</div>
-                    <div><strong>Grade Rule:</strong> ${gradeRule === 'custom' ? document.getElementById('custom-grade-value').value + ' inches' : gradeRule + ' inches'}</div>
-                    <div><strong>Grading Direction:</strong> ${gradingDirection}</div>
                 </div>
                 <table class="pdf-preview-table">
                     <thead>
@@ -2326,12 +2453,6 @@
                                 </tbody>
                             </table>
                             
-                            <!-- Grade Rule Information -->
-                            <div style="margin: 15px 0; padding: 10px; background-color: #f8f8f8; border-radius: 6px;">
-                                <div><strong>Grade Rule:</strong> ${document.getElementById('grade-rule').value === 'custom' ? document.getElementById('custom-grade-value').value + ' inches' : document.getElementById('grade-rule').value + ' inches'}</div>
-                                <div><strong>Grading Direction:</strong> ${document.getElementById('grading-direction').value}</div>
-                            </div>
-                            
                             <!-- Grading Table -->
                             <div style="overflow-x: auto; margin-top: 20px; border: 2px solid #b71c1c; border-radius: 8px; background-color: #fdeaea;">
                                 ${document.getElementById('grading-table').outerHTML}
@@ -2407,13 +2528,21 @@
                 const newInput = document.createElement('input');
                 newInput.type = 'text';
                 newInput.value = '';
+                newInput.setAttribute('data-pom', tr.getAttribute('data-pom'));
+                newInput.setAttribute('data-size', newSize);
+                
+                // Add event listener to base size cells to show grade controls
+                if (newSize === currentBaseSize) {
+                    newInput.addEventListener('focus', function() {
+                        showGradeControls(this);
+                    });
+                }
+
                 newTd.appendChild(newInput);
                 tr.appendChild(newTd);
             });
             
             updateBaseSizeVisual();
-            // Re-apply grade rule after adding new size column
-            applyGradeRuleToAllPoms();
         }
 
         function removeSizeColumn() {
@@ -2460,6 +2589,7 @@
                 document.querySelectorAll('#grading-table input[type="text"]').forEach(input => {
                     input.value = '';
                 });
+                hideGradeControls();
             }
         }
     </script>
