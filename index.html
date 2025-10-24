@@ -165,6 +165,18 @@
             background-color: white;
         }
 
+        /* Tolerance input specific styling */
+        .tolerance-cell input {
+            width: 70px;
+            padding: 6px;
+            border: 1px solid #2e7d32;
+            border-radius: 4px;
+            text-align: center;
+            background-color: #e8f5e8;
+            font-weight: bold;
+            color: #1b5e20;
+        }
+
         .btn-group {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -256,6 +268,15 @@
             text-align: left;
             padding-left: 15px;
             min-width: 200px;
+            position: relative;
+        }
+
+        /* Tolerance Column Styles */
+        .tolerance-cell {
+            background-color: #e8f5e8;
+            font-weight: bold;
+            text-align: center;
+            width: 80px;
             border-right: 2px solid #b71c1c !important;
             position: relative;
         }
@@ -293,9 +314,16 @@
             max-width: 200px;
         }
 
+        .grading-table th:nth-child(3),
+        .grading-table td:nth-child(3) {
+            width: 80px;
+            min-width: 80px;
+            max-width: 80px;
+        }
+
         /* Size columns - 9 visible, 5 scrollable */
-        .grading-table th:nth-child(n+3),
-        .grading-table td:nth-child(n+3) {
+        .grading-table th:nth-child(n+4),
+        .grading-table td:nth-child(n+4) {
             width: 80px;
             min-width: 80px;
             max-width: 80px;
@@ -670,6 +698,12 @@
             padding-left: 10px;
         }
         
+        .pdf-preview-table .tolerance {
+            background-color: #e8f5e8;
+            font-weight: bold;
+            text-align: center;
+        }
+        
         .pdf-preview-table .base-size {
             background-color: #ffe0b2;
             font-weight: bold;
@@ -688,6 +722,13 @@
         .pdf-preview-table td:nth-child(2) {
             position: sticky;
             left: 60px; /* Width of first column */
+            z-index: 10;
+        }
+        
+        .pdf-preview-table th:nth-child(3),
+        .pdf-preview-table td:nth-child(3) {
+            position: sticky;
+            left: 260px; /* Width of first two columns */
             z-index: 10;
             border-right: 2px solid #b71c1c;
         }
@@ -808,6 +849,22 @@
         .base-size-cell {
             position: relative;
         }
+
+        /* Editable parenthesis styles */
+        .editable-parenthesis {
+            display: inline-block;
+            min-width: 20px;
+            border: 1px dashed #999;
+            padding: 0 2px;
+            margin: 0 2px;
+            background: #f0f0f0;
+            text-align: center;
+        }
+
+        .editable-parenthesis:focus {
+            outline: 2px solid #b71c1c;
+            background: #fff;
+        }
     </style>
 </head>
 <body>
@@ -880,7 +937,8 @@
                     <thead>
                         <tr>
                             <th style="border-left: 2px solid #b71c1c;">POM #</th>
-                            <th style="border-right: 2px solid #b71c1c;">Measurement Points</th>
+                            <th>Measurement Points</th>
+                            <th style="border-right: 2px solid #b71c1c;">TOL +/-</th>
                             <!-- Size headers will be added here dynamically -->
                         </tr>
                     </thead>
@@ -924,7 +982,7 @@
                     </svg> DOWNLOAD PDF
                 </button>
             </div>
-            <div class="note" id="base-size-note">Note: Base size is highlighted in orange. Drag POMs using the cross bar (≡) to reorder them. Enter a measurement in the base size column to apply grading rules.</div>
+            <div class="note" id="base-size-note">Note: Base size is highlighted in orange. Drag POMs using the cross bar (≡) to reorder them. Enter a measurement in the base size column to apply grading rules. Tolerance values are editable - click to modify.</div>
         </div>
         
         <!-- PDF Preview Container -->
@@ -1060,104 +1118,287 @@
             'boys-slim': 'Slim (Boys)'
         };
 
-        // Complete POMs by Garment Type
-        const GARMENT_POMS = {
+        // Complete POMs by Garment Type with Tolerances
+        const GARMENT_POMS_WITH_TOLERANCES = {
             'tops': [
-                'NECK LINE CIR.', 'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
-                'FRT LGHT HPS.', 'BCK LGHT CB.', 'ACROSS SH BCK', 'SH LGHT',
-                'SLV LGHT CB.', 'AH CIR.', 'AH DROP FM SH SLANT', 'SLV OPEN.',
-                'SLV CUFF WIDTH', 'SLV CUFF HEIGHT', 'SLV RIB WIDTH', 'SLV RIB HIGHT',
-                'NECK WIDTH', 'FRT NECK DROP', 'BCK NECK DROP', 'COL. RIB WIDTH CB',
-                'COL. RIB LGHT', 'FRT PLACKET LGHT', 'FRT PKT LEGHT', 'FRT PKT WIDHT'
+                {name: 'NECK LINE CIR.', tolerance: '1/4'},
+                {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'BTM HEM /HIP', tolerance: '1/2'},
+                {name: 'FRT LGHT HPS.', tolerance: '1/2'},
+                {name: 'BCK LGHT CB.', tolerance: '1/2'},
+                {name: 'ACROSS SH BCK', tolerance: '1/4'},
+                {name: 'SH LGHT', tolerance: '1/4'},
+                {name: 'SLV LGHT CB.', tolerance: '1/4'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'},
+                {name: 'SLV CUFF WIDTH', tolerance: '1/8'},
+                {name: 'SLV CUFF HEIGHT', tolerance: '1/8'},
+                {name: 'SLV RIB WIDTH', tolerance: '1/8'},
+                {name: 'SLV RIB HIGHT', tolerance: '1/8'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'COL. RIB WIDTH CB', tolerance: '1/8'},
+                {name: 'COL. RIB LGHT', tolerance: '1/8'},
+                {name: 'FRT PLACKET LGHT', tolerance: '1/4'},
+                {name: 'FRT PKT LEGHT', tolerance: '1/4'},
+                {name: 'FRT PKT WIDHT', tolerance: '1/4'}
             ],
             'shirts': [
-                'NECK LINE CIR.', 'CHEST 1" BLW AH', 'WAIST', 'BTM HEM/HIP',
-                'FRT LGHT HPS.', 'BCK LGHT CB.', 'ACROSS SH BCK', 'SH LGHT',
-                'SLV LGHT CB.', 'AH CIR.', 'AH DROP FM SH SLANT', 'SLV OPEN.',
-                'SLV CUFF WIDTH', 'SLV CUFF HEIGHT', 'NECK WIDTH', 'FRT NECK DROP',
-                'BCK NECK DROP', 'TOP COL. WIDTH CB', 'TOP COL. POINT WIDTH',
-                'TOP COL ( ) SPREAD', 'STND COL WIDTH', 'FRT PKT LEGHT', 'FRT PKT WIDHT'
+                {name: 'NECK LINE CIR.', tolerance: '1/4'},
+                {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'BTM HEM/HIP', tolerance: '1/2'},
+                {name: 'FRT LGHT HPS.', tolerance: '1/2'},
+                {name: 'BCK LGHT CB.', tolerance: '1/2'},
+                {name: 'ACROSS SH BCK', tolerance: '1/4'},
+                {name: 'SH LGHT', tolerance: '1/4'},
+                {name: 'SLV LGHT CB.', tolerance: '1/4'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'},
+                {name: 'SLV CUFF WIDTH', tolerance: '1/8'},
+                {name: 'SLV CUFF HEIGHT', tolerance: '1/8'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'TOP COL. WIDTH CB', tolerance: '1/8'},
+                {name: 'TOP COL. POINT WIDTH', tolerance: '1/8'},
+                {name: 'TOP COL ( ) SPREAD', tolerance: '1/8'},
+                {name: 'STND COL WIDTH', tolerance: '1/8'},
+                {name: 'FRT PKT LEGHT', tolerance: '1/4'},
+                {name: 'FRT PKT WIDHT', tolerance: '1/4'}
             ],
             'jackets': [
-                'NECK LINE CIR.', 'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
-                'FRT LGHT HPS.', 'BCK LGHT CB.', 'ACROSS SH BCK', 'SH LGHT',
-                'SLV LGHT CB.', 'AH CIR.', 'AH DROP FM SH SLANT', 'SLV OPEN.',
-                'SLV CUFF WIDTH', 'SLV CUFF HEIGHT', 'NECK WIDTH', 'FRT NECK DROP',
-                'BCK NECK DROP', 'TOP COL. WIDTH CB', 'TOP COL. POINT WIDTH',
-                'TOP COL ( ) SPREAD', 'STND COL WIDTH', 'FRT PKT LEGHT', 'FRT PKT WIDHT'
+                {name: 'NECK LINE CIR.', tolerance: '1/4'},
+                {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'BTM HEM /HIP', tolerance: '1/2'},
+                {name: 'FRT LGHT HPS.', tolerance: '1/2'},
+                {name: 'BCK LGHT CB.', tolerance: '1/2'},
+                {name: 'ACROSS SH BCK', tolerance: '1/4'},
+                {name: 'SH LGHT', tolerance: '1/4'},
+                {name: 'SLV LGHT CB.', tolerance: '1/4'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'},
+                {name: 'SLV CUFF WIDTH', tolerance: '1/8'},
+                {name: 'SLV CUFF HEIGHT', tolerance: '1/8'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'TOP COL. WIDTH CB', tolerance: '1/8'},
+                {name: 'TOP COL. POINT WIDTH', tolerance: '1/8'},
+                {name: 'TOP COL ( ) SPREAD', tolerance: '1/8'},
+                {name: 'STND COL WIDTH', tolerance: '1/8'},
+                {name: 'FRT PKT LEGHT', tolerance: '1/4'},
+                {name: 'FRT PKT WIDHT', tolerance: '1/4'}
             ],
             'outerwear': [
-                'NECK LINE CIR.', 'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
-                'FRT LGHT HPS.', 'BCK LGHT CB.', 'ACROSS SH BCK', 'SH LGHT',
-                'SLV LGHT CB.', 'AH CIR.', 'AH DROP FM SH SLANT', 'SLV OPEN.',
-                'SLV CUFF WIDTH', 'SLV CUFF HEIGHT', 'NECK WIDTH', 'FRT NECK DROP',
-                'BCK NECK DROP', 'TOP COL. WIDTH CB', 'TOP COL. POINT WIDTH',
-                'TOP COL ( ) SPREAD', 'STND COL WIDTH', 'FRT PKT LEGHT', 'FRT PKT WIDHT'
+                {name: 'NECK LINE CIR.', tolerance: '1/4'},
+                {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'BTM HEM /HIP', tolerance: '1/2'},
+                {name: 'FRT LGHT HPS.', tolerance: '1/2'},
+                {name: 'BCK LGHT CB.', tolerance: '1/2'},
+                {name: 'ACROSS SH BCK', tolerance: '1/4'},
+                {name: 'SH LGHT', tolerance: '1/4'},
+                {name: 'SLV LGHT CB.', tolerance: '1/4'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'},
+                {name: 'SLV CUFF WIDTH', tolerance: '1/8'},
+                {name: 'SLV CUFF HEIGHT', tolerance: '1/8'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'TOP COL. WIDTH CB', tolerance: '1/8'},
+                {name: 'TOP COL. POINT WIDTH', tolerance: '1/8'},
+                {name: 'TOP COL ( ) SPREAD', tolerance: '1/8'},
+                {name: 'STND COL WIDTH', tolerance: '1/8'},
+                {name: 'FRT PKT LEGHT', tolerance: '1/4'},
+                {name: 'FRT PKT WIDHT', tolerance: '1/4'}
             ],
             'pants': [
-                'CONT. WB', 'UPPER WB at TOP', 'LOWER WB at SEAM', 'STRT. WB',
-                'WB HEIGHT', 'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) UP CROT',
-                'THIGHT 1" BLW CROT', 'KNEE ( ) BLW CROT', 'LEG OPENING',
-                'FRT RISE', 'BCK RISE', 'INSEAM', 'FRT Dart LGTH BLW WB',
-                'BCK Dart LGTH BLW WB', 'ZIPPER LGTH FLY', 'ZIPPER LGTH CB',
-                'ZIPPER LGTH S. SEAM', 'FRT PKT OPENING', 'FRT PKT LGHT',
-                'BCK PKT PLMT BLW WB', 'BCK PKT PLMT Frm CB', 'BCK PKT OPENING',
-                'BCK PKT LENGTH'
+                {name: 'CONT. WB', tolerance: '1/2'},
+                {name: 'UPPER WB at TOP', tolerance: '1/2'},
+                {name: 'LOWER WB at SEAM', tolerance: '1/2'},
+                {name: 'STRT. WB', tolerance: '1/2'},
+                {name: 'WB HEIGHT', tolerance: '1/4'},
+                {name: 'HIGH HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'LOW HIP ( ) UP CROT', tolerance: '1/2'},
+                {name: 'THIGHT 1" BLW CROT', tolerance: '1/2'},
+                {name: 'KNEE ( ) BLW CROT', tolerance: '1/2'},
+                {name: 'LEG OPENING', tolerance: '1/4'},
+                {name: 'FRT RISE', tolerance: '1/4'},
+                {name: 'BCK RISE', tolerance: '1/4'},
+                {name: 'INSEAM', tolerance: '1/2'},
+                {name: 'FRT Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'BCK Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH FLY', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH CB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH S. SEAM', tolerance: '1/4'},
+                {name: 'FRT PKT OPENING', tolerance: '1/4'},
+                {name: 'FRT PKT LGHT', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT BLW WB', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT Frm CB', tolerance: '1/4'},
+                {name: 'BCK PKT OPENING', tolerance: '1/4'},
+                {name: 'BCK PKT LENGTH', tolerance: '1/4'}
             ],
             'dresses': [
-                'HPS TO BTM HEM', 'FRT LGHT CENTER', 'BCK LGHT CENTER',
-                'BUST 1" BLW AH', 'Waist CIR.', 'HIGH HIP ( ) BLW WB',
-                'LOW HIP ( ) BLW WB', 'AH CIR.', 'AH DROP FM SH SLANT',
-                'SH WIDTH', 'SLV LGTH Frm SH SEAM', 'SLV LGTH FM CB',
-                'SLV OPEN.', 'SLV CUFF SIZE', 'NECK WIDTH', 'FRT NECK DROP',
-                'BCK NECK DROP', 'Zipper LGTH CB', 'SLIT OPEN.', 'Bottom Hem Width',
-                'AH Dart LGHT', 'BUST DART 1" BLW AH', 'FRENCH DART Frm WB', 'SH DART'
+                {name: 'HPS TO BTM HEM', tolerance: '1/2'},
+                {name: 'FRT LGHT CENTER', tolerance: '1/2'},
+                {name: 'BCK LGHT CENTER', tolerance: '1/2'},
+                {name: 'BUST 1" BLW AH', tolerance: '1/2'},
+                {name: 'Waist CIR.', tolerance: '1/2'},
+                {name: 'HIGH HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'LOW HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SH WIDTH', tolerance: '1/4'},
+                {name: 'SLV LGTH Frm SH SEAM', tolerance: '1/4'},
+                {name: 'SLV LGTH FM CB', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'},
+                {name: 'SLV CUFF SIZE', tolerance: '1/8'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'Zipper LGTH CB', tolerance: '1/4'},
+                {name: 'SLIT OPEN.', tolerance: '1/4'},
+                {name: 'Bottom Hem Width', tolerance: '1/2'},
+                {name: 'AH Dart LGHT', tolerance: '1/4'},
+                {name: 'BUST DART 1" BLW AH', tolerance: '1/4'},
+                {name: 'FRENCH DART Frm WB', tolerance: '1/4'},
+                {name: 'SH DART', tolerance: '1/4'}
             ],
             'shorts': [
-                'CONT. WB', 'UPPER WB at TOP', 'LOWER WB at SEAM', 'STRT. WB',
-                'WB HEIGHT', 'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) UP CROT',
-                'THIGHT 1" BLW CROT', 'LEG OPENING', 'FRT RISE', 'BCK RISE',
-                'INSEAM', 'FRT Dart LGTH BLW WB', 'BCK Dart LGTH BLW WB',
-                'ZIPPER LGTH FLY', 'ZIPPER LGTH CB', 'ZIPPER LGTH S. SEAM',
-                'FRT PKT OPENING', 'FRT PKT LGHT', 'BCK PKT PLMT BLW WB',
-                'BCK PKT PLMT Frm CB', 'BCK PKT OPENING', 'BCK PKT LENGTH'
+                {name: 'CONT. WB', tolerance: '1/2'},
+                {name: 'UPPER WB at TOP', tolerance: '1/2'},
+                {name: 'LOWER WB at SEAM', tolerance: '1/2'},
+                {name: 'STRT. WB', tolerance: '1/2'},
+                {name: 'WB HEIGHT', tolerance: '1/4'},
+                {name: 'HIGH HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'LOW HIP ( ) UP CROT', tolerance: '1/2'},
+                {name: 'THIGHT 1" BLW CROT', tolerance: '1/2'},
+                {name: 'LEG OPENING', tolerance: '1/4'},
+                {name: 'FRT RISE', tolerance: '1/4'},
+                {name: 'BCK RISE', tolerance: '1/4'},
+                {name: 'INSEAM', tolerance: '1/2'},
+                {name: 'FRT Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'BCK Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH FLY', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH CB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH S. SEAM', tolerance: '1/4'},
+                {name: 'FRT PKT OPENING', tolerance: '1/4'},
+                {name: 'FRT PKT LGHT', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT BLW WB', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT Frm CB', tolerance: '1/4'},
+                {name: 'BCK PKT OPENING', tolerance: '1/4'},
+                {name: 'BCK PKT LENGTH', tolerance: '1/4'}
             ],
             'skirts': [
-                'CONT. WB', 'UPPER WB at TOP', 'LOWER WB at SEAM', 'STRT. WB',
-                'WB HEIGHT', 'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) BLW WB',
-                'S. SEAM LGTH', 'CF LGTH Frm TOP WB', 'CB LGTH Frm TOP WB',
-                'HEM SWEEP', 'SLIT OPEN.', 'BCK VENT OPEN.', 'FRT Dart LGTH BLW WB',
-                'BCK Dart LGTH BLW WB', 'ZIPPER LGTH FLY', 'ZIPPER LGTH CB',
-                'ZIPPER LGTH S. SEAM', 'FRT PKT OPENING', 'FRT PKT LGHT',
-                'BCK PKT PLMT BLW WB', 'BCK PKT PLMT Frm CB', 'BCK PKT OPENING',
-                'BCK PKT LENGTH'
+                {name: 'CONT. WB', tolerance: '1/2'},
+                {name: 'UPPER WB at TOP', tolerance: '1/2'},
+                {name: 'LOWER WB at SEAM', tolerance: '1/2'},
+                {name: 'STRT. WB', tolerance: '1/2'},
+                {name: 'WB HEIGHT', tolerance: '1/4'},
+                {name: 'HIGH HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'LOW HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'S. SEAM LGTH', tolerance: '1/2'},
+                {name: 'CF LGTH Frm TOP WB', tolerance: '1/2'},
+                {name: 'CB LGTH Frm TOP WB', tolerance: '1/2'},
+                {name: 'HEM SWEEP', tolerance: '1/2'},
+                {name: 'SLIT OPEN.', tolerance: '1/4'},
+                {name: 'BCK VENT OPEN.', tolerance: '1/4'},
+                {name: 'FRT Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'BCK Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH FLY', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH CB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH S. SEAM', tolerance: '1/4'},
+                {name: 'FRT PKT OPENING', tolerance: '1/4'},
+                {name: 'FRT PKT LGHT', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT BLW WB', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT Frm CB', tolerance: '1/4'},
+                {name: 'BCK PKT OPENING', tolerance: '1/4'},
+                {name: 'BCK PKT LENGTH', tolerance: '1/4'}
             ],
             'underwear': [
-                'ELASTIC WAIST HEIGHT', 'ELASTIC WAIST LGHT', 'WAIST BLW WB',
-                'HIPS', 'S SEAM LGHT BLW WB', 'LEG OPEN.', 'FRT RISE', 'BCK RISE'
+                {name: 'ELASTIC WAIST HEIGHT', tolerance: '1/8'},
+                {name: 'ELASTIC WAIST LGHT', tolerance: '1/2'},
+                {name: 'WAIST BLW WB', tolerance: '1/2'},
+                {name: 'HIPS', tolerance: '1/2'},
+                {name: 'S SEAM LGHT BLW WB', tolerance: '1/4'},
+                {name: 'LEG OPEN.', tolerance: '1/4'},
+                {name: 'FRT RISE', tolerance: '1/4'},
+                {name: 'BCK RISE', tolerance: '1/4'}
             ],
             'bodysuit': [
-                'CUP', 'BUST', 'WAIST', 'HIP', 'S SEAM LGHT', 'CROTCH WIDTH at OPEN.',
-                'SH LGHT', 'SLV LGHT CB.', 'AH CIR.', 'AH DROP FM SH SLANT', 'SLV OPEN.'
+                {name: 'CUP', tolerance: '1/4'},
+                {name: 'BUST', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'HIP', tolerance: '1/2'},
+                {name: 'S SEAM LGHT', tolerance: '1/2'},
+                {name: 'CROTCH WIDTH at OPEN.', tolerance: '1/4'},
+                {name: 'SH LGHT', tolerance: '1/4'},
+                {name: 'SLV LGHT CB.', tolerance: '1/4'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'}
             ],
             'bikini': [
-                'CUP', 'BUST', 'WAIST', 'HIP'
+                {name: 'CUP', tolerance: '1/4'},
+                {name: 'BUST', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'HIP', tolerance: '1/2'}
             ],
             'bikini-set': [
-                'CUP', 'BUST', 'WAIST', 'HIP'
+                {name: 'CUP', tolerance: '1/4'},
+                {name: 'BUST', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'HIP', tolerance: '1/2'}
             ],
             'overall': [
-                'MAX. STRAP LGHT', 'BIB LGHT', 'BIB WIDTH AT TOP', 'BIB WIDTH AT BTM',
-                'WAIST', 'HIGH HIP ( ) BLW WB', 'S. SEAM', 'THIGHT 1" BLW CROT',
-                'KNEE ( ) BLW CROT', 'LEG OPENING', 'FRT RISE', 'BCK RISE', 'INSEAM'
+                {name: 'MAX. STRAP LGHT', tolerance: '1/2'},
+                {name: 'BIB LGHT', tolerance: '1/2'},
+                {name: 'BIB WIDTH AT TOP', tolerance: '1/4'},
+                {name: 'BIB WIDTH AT BTM', tolerance: '1/4'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'HIGH HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'S. SEAM', tolerance: '1/2'},
+                {name: 'THIGHT 1" BLW CROT', tolerance: '1/2'},
+                {name: 'KNEE ( ) BLW CROT', tolerance: '1/2'},
+                {name: 'LEG OPENING', tolerance: '1/4'},
+                {name: 'FRT RISE', tolerance: '1/4'},
+                {name: 'BCK RISE', tolerance: '1/4'},
+                {name: 'INSEAM', tolerance: '1/2'}
             ],
             'coverall': [
-                'TOTAL LEGHT', 'NECK WIDTH', 'FRT NECK DROP', 'BCK NECK DROP',
-                'TOP COL. WIDTH CB', 'TOP COL. POINT WIDTH', 'TOP COL ( ) SPREAD',
-                'CHEST 1" BLW AH', 'WAIST', 'HIGH HIP ( ) BLW WB', 'ACROSS SH BCK',
-                'SLV LGHT CB.', 'AH DROP FM SH SLANT', 'THIGHT 1" BLW CROT',
-                'KNEE ( )BLW CROT', 'LEG OPENING', 'FRT RISE', 'BCK RISE', 'INSEAM',
-                'BOOT SIZE', 'BOOT OPEN.', 'BOOT HEIGHT', 'INSOLE LGHT', 'INSOLE WIDHT'
+                {name: 'TOTAL LEGHT', tolerance: '1/2'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'TOP COL. WIDTH CB', tolerance: '1/8'},
+                {name: 'TOP COL. POINT WIDTH', tolerance: '1/8'},
+                {name: 'TOP COL ( ) SPREAD', tolerance: '1/8'},
+                {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'HIGH HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'ACROSS SH BCK', tolerance: '1/4'},
+                {name: 'SLV LGHT CB.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'THIGHT 1" BLW CROT', tolerance: '1/2'},
+                {name: 'KNEE ( )BLW CROT', tolerance: '1/2'},
+                {name: 'LEG OPENING', tolerance: '1/4'},
+                {name: 'FRT RISE', tolerance: '1/4'},
+                {name: 'BCK RISE', tolerance: '1/4'},
+                {name: 'INSEAM', tolerance: '1/2'},
+                {name: 'BOOT SIZE', tolerance: '1/4'},
+                {name: 'BOOT OPEN.', tolerance: '1/4'},
+                {name: 'BOOT HEIGHT', tolerance: '1/4'},
+                {name: 'INSOLE LGHT', tolerance: '1/4'},
+                {name: 'INSOLE WIDHT', tolerance: '1/4'}
             ]
         };
 
@@ -1364,7 +1605,7 @@
         
         function loadPomsForGarment() {
             const garmentType = document.getElementById('garment-type').value;
-            const allPoms = GARMENT_POMS[garmentType] || [];
+            const allPoms = GARMENT_POMS_WITH_TOLERANCES[garmentType] || [];
             
             // Start with first 8 POMs by default
             currentPoms = allPoms.slice(0, 8);
@@ -1374,8 +1615,8 @@
             // Clear existing rows
             tbody.innerHTML = ''; 
 
-            currentPoms.forEach((pomName, index) => {
-                const newRow = createPomRow(pomName, index + 1);
+            currentPoms.forEach((pomData, index) => {
+                const newRow = createPomRow(pomData, index + 1);
                 tbody.appendChild(newRow);
             });
             
@@ -1386,9 +1627,9 @@
             initializeDragAndDrop();
         }
         
-        function createPomRow(pomName, pomNumber) {
+        function createPomRow(pomData, pomNumber) {
             const newRow = document.createElement('tr');
-            newRow.setAttribute('data-pom', pomName);
+            newRow.setAttribute('data-pom', pomData.name);
             newRow.setAttribute('draggable', 'true');
             
             // 1. POM Number cell
@@ -1414,11 +1655,23 @@
             dragHandle.title = 'Drag to reorder';
             pomNameText.appendChild(dragHandle);
             
-            // Add POM name
+            // Add POM name with editable parenthesis
             const pomNameSpan = document.createElement('span');
-            pomNameSpan.textContent = pomName;
+            // Check if POM name contains parenthesis and make them editable
+            let displayName = pomData.name;
+            if (displayName.includes('(') && displayName.includes(')')) {
+                // Replace parenthesis content with an editable span
+                const parts = displayName.split('(');
+                const secondParts = parts[1].split(')');
+                displayName = parts[0] + 
+                    '(<span class="editable-parenthesis" contenteditable="true">' + 
+                    secondParts[0] + 
+                    '</span>)' + 
+                    (secondParts[1] || '');
+            }
+            pomNameSpan.innerHTML = displayName;
             pomNameText.appendChild(pomNameSpan);
-            
+
             pomNameWrapper.appendChild(pomNameText);
             
             // POM management buttons
@@ -1448,7 +1701,20 @@
             nameCell.appendChild(pomNameWrapper);
             newRow.appendChild(nameCell);
 
-            // 3. Input cells
+            // 3. Tolerance cell - EDITABLE
+            const toleranceCell = document.createElement('td');
+            toleranceCell.className = 'tolerance-cell';
+            
+            const toleranceInput = document.createElement('input');
+            toleranceInput.type = 'text';
+            toleranceInput.value = pomData.tolerance;
+            toleranceInput.setAttribute('data-pom', pomData.name);
+            toleranceInput.setAttribute('data-tolerance', 'true');
+            
+            toleranceCell.appendChild(toleranceInput);
+            newRow.appendChild(toleranceCell);
+
+            // 4. Input cells
             const headerCells = document.querySelectorAll('#grading-table thead th[data-size]');
             headerCells.forEach(th => {
                 const size = th.getAttribute('data-size');
@@ -1458,7 +1724,7 @@
                 const newInput = document.createElement('input');
                 newInput.type = 'text';
                 newInput.value = '';
-                newInput.setAttribute('data-pom', pomName);
+                newInput.setAttribute('data-pom', pomData.name);
                 newInput.setAttribute('data-size', size);
                 
                 // Add event listener to base size cells to show grade controls
@@ -1582,7 +1848,7 @@
             sizes.forEach((size, index) => {
                 if (index === baseSizeIndex) return; // Skip base size
                 
-                const sizeCell = row.cells[index + 2]; // +2 because of POM number and name columns
+                const sizeCell = row.cells[index + 3]; // +3 because of POM number, name, and tolerance columns
                 const sizeInput = sizeCell.querySelector('input');
                 
                 // Calculate the difference in position from base size
@@ -1611,8 +1877,8 @@
             const pomList = document.getElementById('available-poms-list');
             
             // Get all available POMs for current garment type
-            const allPoms = GARMENT_POMS[currentGarmentType] || [];
-            const availablePoms = allPoms.filter(pom => !currentPoms.includes(pom));
+            const allPoms = GARMENT_POMS_WITH_TOLERANCES[currentGarmentType] || [];
+            const availablePoms = allPoms.filter(pom => !currentPoms.some(current => current.name === pom.name));
             
             // Clear the list
             pomList.innerHTML = '';
@@ -1625,10 +1891,11 @@
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.className = 'pom-checkbox';
-                checkbox.value = pom;
+                checkbox.value = pom.name;
+                checkbox.setAttribute('data-tolerance', pom.tolerance);
                 
                 const label = document.createElement('label');
-                label.textContent = pom;
+                label.textContent = `${pom.name} (TOL: ${pom.tolerance})`;
                 
                 pomItem.appendChild(checkbox);
                 pomItem.appendChild(label);
@@ -1646,11 +1913,15 @@
         
         function addSelectedPoms() {
             const checkboxes = document.querySelectorAll('#available-poms-list .pom-checkbox:checked');
-            const pomsToAdd = Array.from(checkboxes).map(cb => cb.value);
+            const pomsToAdd = Array.from(checkboxes).map(cb => ({
+                name: cb.value,
+                tolerance: cb.getAttribute('data-tolerance')
+            }));
             
             if (pomsToAdd.length > 0) {
                 // Get current measurements to preserve them
                 const currentMeasurements = {};
+                const currentTolerances = {};
                 const rows = document.querySelectorAll('#grading-tbody tr');
                 
                 rows.forEach(row => {
@@ -1668,6 +1939,12 @@
                     });
                     
                     currentMeasurements[pomName] = measurements;
+                    
+                    // Get tolerance value
+                    const toleranceInput = row.cells[2].querySelector('input');
+                    if (toleranceInput) {
+                        currentTolerances[pomName] = toleranceInput.value;
+                    }
                 });
                 
                 // Add selected POMs to current POMs
@@ -1676,7 +1953,7 @@
                 // Rebuild the table
                 rebuildPomTable();
                 
-                // Restore measurements for existing POMs
+                // Restore measurements and tolerances for existing POMs
                 const newRows = document.querySelectorAll('#grading-tbody tr');
                 newRows.forEach(row => {
                     const pomName = row.getAttribute('data-pom');
@@ -1691,6 +1968,14 @@
                             }
                         });
                     }
+                    
+                    // Restore tolerance
+                    if (currentTolerances[pomName]) {
+                        const toleranceInput = row.cells[2].querySelector('input');
+                        if (toleranceInput) {
+                            toleranceInput.value = currentTolerances[pomName];
+                        }
+                    }
                 });
                 
                 // Close the modal
@@ -1701,10 +1986,11 @@
         }
         
         function addAllPoms() {
-            const allPoms = GARMENT_POMS[currentGarmentType] || [];
+            const allPoms = GARMENT_POMS_WITH_TOLERANCES[currentGarmentType] || [];
             
             // Get current measurements to preserve them
             const currentMeasurements = {};
+            const currentTolerances = {};
             const rows = document.querySelectorAll('#grading-tbody tr');
             
             rows.forEach(row => {
@@ -1722,6 +2008,12 @@
                 });
                 
                 currentMeasurements[pomName] = measurements;
+                
+                // Get tolerance value
+                const toleranceInput = row.cells[2].querySelector('input');
+                if (toleranceInput) {
+                    currentTolerances[pomName] = toleranceInput.value;
+                }
             });
             
             // Add all POMs to current POMs
@@ -1730,7 +2022,7 @@
             // Rebuild the table
             rebuildPomTable();
             
-            // Restore measurements for existing POMs
+            // Restore measurements and tolerances for existing POMs
             const newRows = document.querySelectorAll('#grading-tbody tr');
             newRows.forEach(row => {
                 const pomName = row.getAttribute('data-pom');
@@ -1745,6 +2037,14 @@
                         }
                     });
                 }
+                
+                // Restore tolerance
+                if (currentTolerances[pomName]) {
+                    const toleranceInput = row.cells[2].querySelector('input');
+                    if (toleranceInput) {
+                        toleranceInput.value = currentTolerances[pomName];
+                    }
+                }
             });
             
             // Close the modal
@@ -1758,6 +2058,7 @@
             if (customPomName) {
                 // Get current measurements to preserve them
                 const currentMeasurements = {};
+                const currentTolerances = {};
                 const rows = document.querySelectorAll('#grading-tbody tr');
                 
                 rows.forEach(row => {
@@ -1775,15 +2076,25 @@
                     });
                     
                     currentMeasurements[pomName] = measurements;
+                    
+                    // Get tolerance value
+                    const toleranceInput = row.cells[2].querySelector('input');
+                    if (toleranceInput) {
+                        currentTolerances[pomName] = toleranceInput.value;
+                    }
                 });
                 
-                // Add custom POM to current POMs
-                currentPoms.push(customPomName);
+                // Add custom POM to current POMs with default tolerance
+                const customPom = {
+                    name: customPomName,
+                    tolerance: '1/4' // Default tolerance for custom POMs
+                };
+                currentPoms.push(customPom);
                 
                 // Rebuild the table
                 rebuildPomTable();
                 
-                // Restore measurements for existing POMs
+                // Restore measurements and tolerances for existing POMs
                 const newRows = document.querySelectorAll('#grading-tbody tr');
                 newRows.forEach(row => {
                     const pomName = row.getAttribute('data-pom');
@@ -1797,6 +2108,14 @@
                                 input.value = currentMeasurements[pomName][size];
                             }
                         });
+                    }
+                    
+                    // Restore tolerance
+                    if (currentTolerances[pomName]) {
+                        const toleranceInput = row.cells[2].querySelector('input');
+                        if (toleranceInput) {
+                            toleranceInput.value = currentTolerances[pomName];
+                        }
                     }
                 });
                 
@@ -1827,8 +2146,8 @@
             tbody.innerHTML = ''; 
 
             // Recreate all rows
-            currentPoms.forEach((pomName, index) => {
-                const newRow = createPomRow(pomName, index + 1);
+            currentPoms.forEach((pomData, index) => {
+                const newRow = createPomRow(pomData, index + 1);
                 tbody.appendChild(newRow);
             });
             
@@ -1843,10 +2162,15 @@
         
         function resetPoms() {
             const garmentType = document.getElementById('garment-type').value;
-            const corePoms = CORE_POMS[garmentType] || [];
+            const corePomsNames = CORE_POMS[garmentType] || [];
+            const allPoms = GARMENT_POMS_WITH_TOLERANCES[garmentType] || [];
+            
+            // Get core POMs with their tolerances
+            const corePoms = allPoms.filter(pom => corePomsNames.includes(pom.name));
             
             // Get current measurements to preserve them
             const currentMeasurements = {};
+            const currentTolerances = {};
             const rows = document.querySelectorAll('#grading-tbody tr');
             
             rows.forEach(row => {
@@ -1864,6 +2188,12 @@
                 });
                 
                 currentMeasurements[pomName] = measurements;
+                
+                // Get tolerance value
+                const toleranceInput = row.cells[2].querySelector('input');
+                if (toleranceInput) {
+                    currentTolerances[pomName] = toleranceInput.value;
+                }
             });
             
             // Reset to core POMs
@@ -1872,7 +2202,7 @@
             // Rebuild the table
             rebuildPomTable();
             
-            // Restore measurements for POMs that exist in both old and new lists
+            // Restore measurements and tolerances for POMs that exist in both old and new lists
             const newRows = document.querySelectorAll('#grading-tbody tr');
             newRows.forEach(row => {
                 const pomName = row.getAttribute('data-pom');
@@ -1886,6 +2216,14 @@
                             input.value = currentMeasurements[pomName][size];
                         }
                     });
+                }
+                
+                // Restore tolerance if it exists
+                if (currentTolerances[pomName]) {
+                    const toleranceInput = row.cells[2].querySelector('input');
+                    if (toleranceInput) {
+                        toleranceInput.value = currentTolerances[pomName];
+                    }
                 }
             });
             
@@ -2042,7 +2380,16 @@
             
             Array.from(tbody.rows).forEach((row, index) => {
                 const pomName = row.getAttribute('data-pom');
-                newPoms.push(pomName);
+                // Find the pom data from currentPoms
+                const pomData = currentPoms.find(pom => pom.name === pomName);
+                if (pomData) {
+                    // Update tolerance from the input field
+                    const toleranceInput = row.cells[2].querySelector('input');
+                    if (toleranceInput) {
+                        pomData.tolerance = toleranceInput.value;
+                    }
+                    newPoms.push(pomData);
+                }
                 // Update POM number
                 row.cells[0].textContent = index + 1;
             });
@@ -2079,13 +2426,13 @@
             const tbody = document.getElementById('grading-tbody');
             const sizeOptions = getCurrentSizeOptions();
             
-            // Remove all current size headers (keep the first two <th> which are "POM #" and "Measurement Points")
+            // Remove all current size headers (keep the first three <th> which are "POM #", "Measurement Points", and "TOL +/-")
             const existingHeaders = theadRow.querySelectorAll('th[data-size]');
             existingHeaders.forEach(th => th.remove());
             
-            // Remove all data cells from rows (keep the first two cells which are POM number and name)
+            // Remove all data cells from rows (keep the first three cells which are POM number, name, and tolerance)
             tbody.querySelectorAll('tr').forEach(tr => {
-                Array.from(tr.cells).slice(2).forEach(td => td.remove());
+                Array.from(tr.cells).slice(3).forEach(td => td.remove());
             });
 
             // Add new headers (max 14 - 9 visible, 5 scrollable)
@@ -2155,8 +2502,8 @@
 
             // 3. Apply base size style and add event listeners
             if (baseSizeIndex !== -1) {
-                // The size columns start at cell index 2 (index 0 is POM number, index 1 is POM name)
-                const columnIndex = baseSizeIndex + 2; 
+                // The size columns start at cell index 3 (index 0 is POM number, index 1 is POM name, index 2 is tolerance)
+                const columnIndex = baseSizeIndex + 3; 
                 table.querySelectorAll(`#grading-tbody tr`).forEach(row => {
                     const baseCell = row.cells[columnIndex];
                     if (baseCell) {
@@ -2174,7 +2521,7 @@
 
             // 4. Update the note
             const baseSizeText = document.getElementById('base-size-select').options[document.getElementById('base-size-select').selectedIndex]?.textContent || currentBaseSize;
-            note.textContent = `Note: Base size (${baseSizeText}) is highlighted in orange. Drag POMs using the cross bar (≡) to reorder them. Click on a base size measurement to apply grading rules.`;
+            note.textContent = `Note: Base size (${baseSizeText}) is highlighted in orange. Drag POMs using the cross bar (≡) to reorder them. Click on a base size measurement to apply grading rules. Tolerance values are editable - click to modify.`;
         }
 
         // --- PDF Preview and Download Functions ---
@@ -2224,6 +2571,7 @@
                         <tr>
                             <th>POM #</th>
                             <th>Measurement Points</th>
+                            <th>TOL +/-</th>
             `;
             
             // Add size headers
@@ -2238,14 +2586,17 @@
             pomRows.forEach((row, index) => {
                 const pomNumber = row.cells[0].textContent;
                 const pomName = row.getAttribute('data-pom');
+                const toleranceInput = row.cells[2].querySelector('input');
+                const tolerance = toleranceInput ? toleranceInput.value : '';
                 
                 html += `<tr>
                     <td class="pom-number">${pomNumber}</td>
-                    <td class="pom-name">${pomName}</td>`;
+                    <td class="pom-name">${pomName}</td>
+                    <td class="tolerance">${tolerance}</td>`;
                 
                 // Add measurement values for each size
-                for (let i = 2; i < row.cells.length; i++) {
-                    const size = sizes[i-2];
+                for (let i = 3; i < row.cells.length; i++) {
+                    const size = sizes[i-3];
                     const input = row.cells[i].querySelector('input');
                     const value = input ? input.value : '';
                     const isBaseSize = size === baseSize;
@@ -2360,8 +2711,14 @@
                             text-align: left;
                             padding-left: 15px;
                             min-width: 200px;
-                            border-right: 2px solid #b71c1c !important;
                             position: relative;
+                        }
+                        .tolerance-cell {
+                            background-color: #e8f5e8;
+                            font-weight: bold;
+                            text-align: center;
+                            width: 80px;
+                            border-right: 2px solid #b71c1c !important;
                         }
                         .grading-table {
                             width: 100%;
@@ -2575,8 +2932,8 @@
             // 2. Remove last cell from all rows
             document.querySelectorAll('#grading-tbody tr').forEach(tr => {
                 // The column index in the row is headerCells.length
-                if (tr.cells.length > 2) {
-                    tr.cells[columnToRemoveIndex + 1].remove(); // +1 because of POM number column
+                if (tr.cells.length > 3) {
+                    tr.cells[columnToRemoveIndex + 2].remove(); // +2 because of POM number and tolerance columns
                 }
             });
             
