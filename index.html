@@ -884,21 +884,45 @@
                         <td class="info-label">GARMENT TYPE</td>
                         <td>
                             <div class="info-stack dropdown-enabled">
-                                <select id="garment-type" onchange="loadPomsForGarment()">
-                                    <option value="tops" selected>TOPS</option>
-                                    <option value="shirts">SHIRTS</option>
-                                    <option value="jackets">JACKETS</option>
-                                    <option value="outerwear">OUTERWEAR</option>
-                                    <option value="pants">PANTS</option>
-                                    <option value="dresses">DRESSES</option>
-                                    <option value="shorts">SHORTS</option>
-                                    <option value="skirts">SKIRTS</option>
-                                    <option value="underwear">UNDERWEAR</option>
-                                    <option value="bodysuit">BODYSUIT</option>
-                                    <option value="bikini">BIKINI</option>
-                                    <option value="bikini-set">BIKINI SET</option>
-                                    <option value="overall">OVERALL</option>
-                                    <option value="coverall">COVERALL</option>
+                                <select id="garment-type" onchange="updateSizeCategories()">
+                                    <option value="" disabled selected>Select garment type</option>
+                                    <optgroup label="WOMEN">
+                                        <option value="tops">Women's Tops</option>
+                                        <option value="shirts">Women's Shirts</option>
+                                        <option value="jacket">Women's Jacket</option>
+                                        <option value="outerwear">Women's Outerwear</option>
+                                        <option value="pants">Women's Pants</option>
+                                        <option value="skirts">Women's Skirts</option>
+                                        <option value="dresses">Women's Dresses</option>
+                                        <option value="shorts">Women's Shorts</option>
+                                        <option value="underwear">Women's Underwear</option>
+                                        <option value="bodysuit">Women's Bodysuit</option>
+                                    </optgroup>
+                                    <optgroup label="MEN">
+                                        <option value="men-tops">Men's Tops</option>
+                                        <option value="men-shirts">Men's Shirts</option>
+                                        <option value="casual-jacket">Men's Casual Jacket</option>
+                                        <option value="suit-jacket">Men's Suit Jacket</option>
+                                        <option value="men-outerwear">Men's Outerwear</option>
+                                        <option value="men-pants">Men's Pants</option>
+                                        <option value="men-shorts">Men's Shorts</option>
+                                        <option value="men-underwear">Men's Underwear</option>
+                                    </optgroup>
+                                    <optgroup label="CHILDREN">
+                                        <option value="children-tops">Children's Tops</option>
+                                        <option value="children-jacket">Children's Jacket</option>
+                                        <option value="children-pants">Children's Pants</option>
+                                        <option value="children-skirts">Children's Skirts</option>
+                                        <option value="children-dresses">Children's Dresses</option>
+                                        <option value="children-shorts">Children's Shorts</option>
+                                    </optgroup>
+                                    <optgroup label="OTHER/UNISEX">
+                                        <option value="unisex-outerwear">Unisex Outerwear</option>
+                                        <option value="overall">Overall</option>
+                                        <option value="coverall">Coverall</option>
+                                        <option value="bikini">Bikini</option>
+                                        <option value="bikini-set">Bikini Set</option>
+                                    </optgroup>
                                 </select>
                             </div>
                         </td>
@@ -1062,20 +1086,42 @@
 
         // Garment type to size system mapping
         const GARMENT_SIZE_SYSTEMS = {
+            // Women's garments
             'tops': 'alpha-standard',
-            'shirts': 'alpha-short',
-            'jackets': 'alpha-short',
-            'outerwear': 'alpha-short',
+            'shirts': 'alpha-standard',
+            'jacket': 'alpha-standard',
+            'outerwear': 'alpha-standard',
             'pants': 'women-num',
+            'skirts': 'women-num',
             'dresses': 'women-num',
             'shorts': 'women-num',
-            'skirts': 'women-num',
-            'underwear': 'alpha-short',
-            'bodysuit': 'alpha-short',
-            'bikini': 'alpha-short',
-            'bikini-set': 'alpha-short',
+            'underwear': 'alpha-standard',
+            'bodysuit': 'alpha-standard',
+            
+            // Men's garments
+            'men-tops': 'alpha-short',
+            'men-shirts': 'alpha-short',
+            'casual-jacket': 'alpha-short',
+            'suit-jacket': 'mens-suit-R',
+            'men-outerwear': 'alpha-short',
+            'men-pants': 'men-num',
+            'men-shorts': 'men-num',
+            'men-underwear': 'alpha-short',
+            
+            // Children's garments
+            'children-tops': 'child-num',
+            'children-jacket': 'child-num',
+            'children-pants': 'child-num',
+            'children-skirts': 'child-num',
+            'children-dresses': 'child-num',
+            'children-shorts': 'child-num',
+            
+            // Other/Unisex garments
+            'unisex-outerwear': 'alpha-short',
             'overall': 'alpha-short',
-            'coverall': 'alpha-short'
+            'coverall': 'alpha-short',
+            'bikini': 'alpha-standard',
+            'bikini-set': 'alpha-standard'
         };
 
         // Default base sizes for each system
@@ -1120,6 +1166,7 @@
 
         // Complete POMs by Garment Type with Tolerances
         const GARMENT_POMS_WITH_TOLERANCES = {
+            // Women's garments
             'tops': [
                 {name: 'NECK LINE CIR.', tolerance: '1/4'},
                 {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
@@ -1171,7 +1218,7 @@
                 {name: 'FRT PKT LEGHT', tolerance: '1/4'},
                 {name: 'FRT PKT WIDHT', tolerance: '1/4'}
             ],
-            'jackets': [
+            'jacket': [
                 {name: 'NECK LINE CIR.', tolerance: '1/4'},
                 {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
                 {name: 'WAIST', tolerance: '1/2'},
@@ -1235,6 +1282,32 @@
                 {name: 'FRT RISE', tolerance: '1/4'},
                 {name: 'BCK RISE', tolerance: '1/4'},
                 {name: 'INSEAM', tolerance: '1/2'},
+                {name: 'FRT Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'BCK Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH FLY', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH CB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH S. SEAM', tolerance: '1/4'},
+                {name: 'FRT PKT OPENING', tolerance: '1/4'},
+                {name: 'FRT PKT LGHT', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT BLW WB', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT Frm CB', tolerance: '1/4'},
+                {name: 'BCK PKT OPENING', tolerance: '1/4'},
+                {name: 'BCK PKT LENGTH', tolerance: '1/4'}
+            ],
+            'skirts': [
+                {name: 'CONT. WB', tolerance: '1/2'},
+                {name: 'UPPER WB at TOP', tolerance: '1/2'},
+                {name: 'LOWER WB at SEAM', tolerance: '1/2'},
+                {name: 'STRT. WB', tolerance: '1/2'},
+                {name: 'WB HEIGHT', tolerance: '1/4'},
+                {name: 'HIGH HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'LOW HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'S. SEAM LGTH', tolerance: '1/2'},
+                {name: 'CF LGTH Frm TOP WB', tolerance: '1/2'},
+                {name: 'CB LGTH Frm TOP WB', tolerance: '1/2'},
+                {name: 'HEM SWEEP', tolerance: '1/2'},
+                {name: 'SLIT OPEN.', tolerance: '1/4'},
+                {name: 'BCK VENT OPEN.', tolerance: '1/4'},
                 {name: 'FRT Dart LGTH BLW WB', tolerance: '1/4'},
                 {name: 'BCK Dart LGTH BLW WB', tolerance: '1/4'},
                 {name: 'ZIPPER LGTH FLY', tolerance: '1/4'},
@@ -1298,7 +1371,294 @@
                 {name: 'BCK PKT OPENING', tolerance: '1/4'},
                 {name: 'BCK PKT LENGTH', tolerance: '1/4'}
             ],
-            'skirts': [
+            'underwear': [
+                {name: 'ELASTIC WAIST HEIGHT', tolerance: '1/8'},
+                {name: 'ELASTIC WAIST LGHT', tolerance: '1/2'},
+                {name: 'WAIST BLW WB', tolerance: '1/2'},
+                {name: 'HIPS', tolerance: '1/2'},
+                {name: 'S SEAM LGHT BLW WB', tolerance: '1/4'},
+                {name: 'LEG OPEN.', tolerance: '1/4'},
+                {name: 'FRT RISE', tolerance: '1/4'},
+                {name: 'BCK RISE', tolerance: '1/4'}
+            ],
+            'bodysuit': [
+                {name: 'CUP', tolerance: '1/4'},
+                {name: 'BUST', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'HIP', tolerance: '1/2'},
+                {name: 'S SEAM LGHT', tolerance: '1/2'},
+                {name: 'CROTCH WIDTH at OPEN.', tolerance: '1/4'},
+                {name: 'SH LGHT', tolerance: '1/4'},
+                {name: 'SLV LGHT CB.', tolerance: '1/4'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'}
+            ],
+            
+            // Men's garments
+            'men-tops': [
+                {name: 'NECK LINE CIR.', tolerance: '1/4'},
+                {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'BTM HEM /HIP', tolerance: '1/2'},
+                {name: 'FRT LGHT HPS.', tolerance: '1/2'},
+                {name: 'BCK LGHT CB.', tolerance: '1/2'},
+                {name: 'ACROSS SH BCK', tolerance: '1/4'},
+                {name: 'SH LGHT', tolerance: '1/4'},
+                {name: 'SLV LGHT CB.', tolerance: '1/4'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'},
+                {name: 'SLV CUFF WIDTH', tolerance: '1/8'},
+                {name: 'SLV CUFF HEIGHT', tolerance: '1/8'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'COL. RIB WIDTH CB', tolerance: '1/8'},
+                {name: 'COL. RIB LGHT', tolerance: '1/8'},
+                {name: 'FRT PLACKET LGHT', tolerance: '1/4'},
+                {name: 'FRT PKT LEGHT', tolerance: '1/4'},
+                {name: 'FRT PKT WIDHT', tolerance: '1/4'}
+            ],
+            'men-shirts': [
+                {name: 'NECK LINE CIR.', tolerance: '1/4'},
+                {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'BTM HEM/HIP', tolerance: '1/2'},
+                {name: 'FRT LGHT HPS.', tolerance: '1/2'},
+                {name: 'BCK LGHT CB.', tolerance: '1/2'},
+                {name: 'ACROSS SH BCK', tolerance: '1/4'},
+                {name: 'SH LGHT', tolerance: '1/4'},
+                {name: 'SLV LGHT CB.', tolerance: '1/4'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'},
+                {name: 'SLV CUFF WIDTH', tolerance: '1/8'},
+                {name: 'SLV CUFF HEIGHT', tolerance: '1/8'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'TOP COL. WIDTH CB', tolerance: '1/8'},
+                {name: 'TOP COL. POINT WIDTH', tolerance: '1/8'},
+                {name: 'TOP COL ( ) SPREAD', tolerance: '1/8'},
+                {name: 'STND COL WIDTH', tolerance: '1/8'},
+                {name: 'FRT PKT LEGHT', tolerance: '1/4'},
+                {name: 'FRT PKT WIDHT', tolerance: '1/4'}
+            ],
+            'casual-jacket': [
+                {name: 'NECK LINE CIR.', tolerance: '1/4'},
+                {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'BTM HEM /HIP', tolerance: '1/2'},
+                {name: 'FRT LGHT HPS.', tolerance: '1/2'},
+                {name: 'BCK LGHT CB.', tolerance: '1/2'},
+                {name: 'ACROSS SH BCK', tolerance: '1/4'},
+                {name: 'SH LGHT', tolerance: '1/4'},
+                {name: 'SLV LGHT CB.', tolerance: '1/4'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'},
+                {name: 'SLV CUFF WIDTH', tolerance: '1/8'},
+                {name: 'SLV CUFF HEIGHT', tolerance: '1/8'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'TOP COL. WIDTH CB', tolerance: '1/8'},
+                {name: 'TOP COL. POINT WIDTH', tolerance: '1/8'},
+                {name: 'TOP COL ( ) SPREAD', tolerance: '1/8'},
+                {name: 'STND COL WIDTH', tolerance: '1/8'},
+                {name: 'FRT PKT LEGHT', tolerance: '1/4'},
+                {name: 'FRT PKT WIDHT', tolerance: '1/4'}
+            ],
+            'suit-jacket': [
+                {name: 'NECK LINE CIR.', tolerance: '1/4'},
+                {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'BTM HEM /HIP', tolerance: '1/2'},
+                {name: 'FRT LGHT HPS.', tolerance: '1/2'},
+                {name: 'BCK LGHT CB.', tolerance: '1/2'},
+                {name: 'ACROSS SH BCK', tolerance: '1/4'},
+                {name: 'SH LGHT', tolerance: '1/4'},
+                {name: 'SLV LGHT CB.', tolerance: '1/4'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'},
+                {name: 'SLV CUFF WIDTH', tolerance: '1/8'},
+                {name: 'SLV CUFF HEIGHT', tolerance: '1/8'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'TOP COL. WIDTH CB', tolerance: '1/8'},
+                {name: 'TOP COL. POINT WIDTH', tolerance: '1/8'},
+                {name: 'TOP COL ( ) SPREAD', tolerance: '1/8'},
+                {name: 'STND COL WIDTH', tolerance: '1/8'},
+                {name: 'FRT PKT LEGHT', tolerance: '1/4'},
+                {name: 'FRT PKT WIDHT', tolerance: '1/4'}
+            ],
+            'men-outerwear': [
+                {name: 'NECK LINE CIR.', tolerance: '1/4'},
+                {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'BTM HEM /HIP', tolerance: '1/2'},
+                {name: 'FRT LGHT HPS.', tolerance: '1/2'},
+                {name: 'BCK LGHT CB.', tolerance: '1/2'},
+                {name: 'ACROSS SH BCK', tolerance: '1/4'},
+                {name: 'SH LGHT', tolerance: '1/4'},
+                {name: 'SLV LGHT CB.', tolerance: '1/4'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'},
+                {name: 'SLV CUFF WIDTH', tolerance: '1/8'},
+                {name: 'SLV CUFF HEIGHT', tolerance: '1/8'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'TOP COL. WIDTH CB', tolerance: '1/8'},
+                {name: 'TOP COL. POINT WIDTH', tolerance: '1/8'},
+                {name: 'TOP COL ( ) SPREAD', tolerance: '1/8'},
+                {name: 'STND COL WIDTH', tolerance: '1/8'},
+                {name: 'FRT PKT LEGHT', tolerance: '1/4'},
+                {name: 'FRT PKT WIDHT', tolerance: '1/4'}
+            ],
+            'men-pants': [
+                {name: 'CONT. WB', tolerance: '1/2'},
+                {name: 'UPPER WB at TOP', tolerance: '1/2'},
+                {name: 'LOWER WB at SEAM', tolerance: '1/2'},
+                {name: 'STRT. WB', tolerance: '1/2'},
+                {name: 'WB HEIGHT', tolerance: '1/4'},
+                {name: 'HIGH HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'LOW HIP ( ) UP CROT', tolerance: '1/2'},
+                {name: 'THIGHT 1" BLW CROT', tolerance: '1/2'},
+                {name: 'KNEE ( ) BLW CROT', tolerance: '1/2'},
+                {name: 'LEG OPENING', tolerance: '1/4'},
+                {name: 'FRT RISE', tolerance: '1/4'},
+                {name: 'BCK RISE', tolerance: '1/4'},
+                {name: 'INSEAM', tolerance: '1/2'},
+                {name: 'FRT Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'BCK Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH FLY', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH CB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH S. SEAM', tolerance: '1/4'},
+                {name: 'FRT PKT OPENING', tolerance: '1/4'},
+                {name: 'FRT PKT LGHT', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT BLW WB', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT Frm CB', tolerance: '1/4'},
+                {name: 'BCK PKT OPENING', tolerance: '1/4'},
+                {name: 'BCK PKT LENGTH', tolerance: '1/4'}
+            ],
+            'men-shorts': [
+                {name: 'CONT. WB', tolerance: '1/2'},
+                {name: 'UPPER WB at TOP', tolerance: '1/2'},
+                {name: 'LOWER WB at SEAM', tolerance: '1/2'},
+                {name: 'STRT. WB', tolerance: '1/2'},
+                {name: 'WB HEIGHT', tolerance: '1/4'},
+                {name: 'HIGH HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'LOW HIP ( ) UP CROT', tolerance: '1/2'},
+                {name: 'THIGHT 1" BLW CROT', tolerance: '1/2'},
+                {name: 'LEG OPENING', tolerance: '1/4'},
+                {name: 'FRT RISE', tolerance: '1/4'},
+                {name: 'BCK RISE', tolerance: '1/4'},
+                {name: 'INSEAM', tolerance: '1/2'},
+                {name: 'FRT Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'BCK Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH FLY', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH CB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH S. SEAM', tolerance: '1/4'},
+                {name: 'FRT PKT OPENING', tolerance: '1/4'},
+                {name: 'FRT PKT LGHT', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT BLW WB', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT Frm CB', tolerance: '1/4'},
+                {name: 'BCK PKT OPENING', tolerance: '1/4'},
+                {name: 'BCK PKT LENGTH', tolerance: '1/4'}
+            ],
+            'men-underwear': [
+                {name: 'ELASTIC WAIST HEIGHT', tolerance: '1/8'},
+                {name: 'ELASTIC WAIST LGHT', tolerance: '1/2'},
+                {name: 'WAIST BLW WB', tolerance: '1/2'},
+                {name: 'HIPS', tolerance: '1/2'},
+                {name: 'S SEAM LGHT BLW WB', tolerance: '1/4'},
+                {name: 'LEG OPEN.', tolerance: '1/4'},
+                {name: 'FRT RISE', tolerance: '1/4'},
+                {name: 'BCK RISE', tolerance: '1/4'}
+            ],
+            
+            // Children's garments
+            'children-tops': [
+                {name: 'NECK LINE CIR.', tolerance: '1/4'},
+                {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'BTM HEM /HIP', tolerance: '1/2'},
+                {name: 'FRT LGHT HPS.', tolerance: '1/2'},
+                {name: 'BCK LGHT CB.', tolerance: '1/2'},
+                {name: 'ACROSS SH BCK', tolerance: '1/4'},
+                {name: 'SH LGHT', tolerance: '1/4'},
+                {name: 'SLV LGHT CB.', tolerance: '1/4'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'},
+                {name: 'SLV CUFF WIDTH', tolerance: '1/8'},
+                {name: 'SLV CUFF HEIGHT', tolerance: '1/8'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'COL. RIB WIDTH CB', tolerance: '1/8'},
+                {name: 'COL. RIB LGHT', tolerance: '1/8'},
+                {name: 'FRT PLACKET LGHT', tolerance: '1/4'},
+                {name: 'FRT PKT LEGHT', tolerance: '1/4'},
+                {name: 'FRT PKT WIDHT', tolerance: '1/4'}
+            ],
+            'children-jacket': [
+                {name: 'NECK LINE CIR.', tolerance: '1/4'},
+                {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'BTM HEM /HIP', tolerance: '1/2'},
+                {name: 'FRT LGHT HPS.', tolerance: '1/2'},
+                {name: 'BCK LGHT CB.', tolerance: '1/2'},
+                {name: 'ACROSS SH BCK', tolerance: '1/4'},
+                {name: 'SH LGHT', tolerance: '1/4'},
+                {name: 'SLV LGHT CB.', tolerance: '1/4'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'},
+                {name: 'SLV CUFF WIDTH', tolerance: '1/8'},
+                {name: 'SLV CUFF HEIGHT', tolerance: '1/8'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'TOP COL. WIDTH CB', tolerance: '1/8'},
+                {name: 'TOP COL. POINT WIDTH', tolerance: '1/8'},
+                {name: 'TOP COL ( ) SPREAD', tolerance: '1/8'},
+                {name: 'STND COL WIDTH', tolerance: '1/8'},
+                {name: 'FRT PKT LEGHT', tolerance: '1/4'},
+                {name: 'FRT PKT WIDHT', tolerance: '1/4'}
+            ],
+            'children-pants': [
+                {name: 'CONT. WB', tolerance: '1/2'},
+                {name: 'UPPER WB at TOP', tolerance: '1/2'},
+                {name: 'LOWER WB at SEAM', tolerance: '1/2'},
+                {name: 'STRT. WB', tolerance: '1/2'},
+                {name: 'WB HEIGHT', tolerance: '1/4'},
+                {name: 'HIGH HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'LOW HIP ( ) UP CROT', tolerance: '1/2'},
+                {name: 'THIGHT 1" BLW CROT', tolerance: '1/2'},
+                {name: 'KNEE ( ) BLW CROT', tolerance: '1/2'},
+                {name: 'LEG OPENING', tolerance: '1/4'},
+                {name: 'FRT RISE', tolerance: '1/4'},
+                {name: 'BCK RISE', tolerance: '1/4'},
+                {name: 'INSEAM', tolerance: '1/2'},
+                {name: 'FRT Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'BCK Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH FLY', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH CB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH S. SEAM', tolerance: '1/4'},
+                {name: 'FRT PKT OPENING', tolerance: '1/4'},
+                {name: 'FRT PKT LGHT', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT BLW WB', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT Frm CB', tolerance: '1/4'},
+                {name: 'BCK PKT OPENING', tolerance: '1/4'},
+                {name: 'BCK PKT LENGTH', tolerance: '1/4'}
+            ],
+            'children-skirts': [
                 {name: 'CONT. WB', tolerance: '1/2'},
                 {name: 'UPPER WB at TOP', tolerance: '1/2'},
                 {name: 'LOWER WB at SEAM', tolerance: '1/2'},
@@ -1324,40 +1684,83 @@
                 {name: 'BCK PKT OPENING', tolerance: '1/4'},
                 {name: 'BCK PKT LENGTH', tolerance: '1/4'}
             ],
-            'underwear': [
-                {name: 'ELASTIC WAIST HEIGHT', tolerance: '1/8'},
-                {name: 'ELASTIC WAIST LGHT', tolerance: '1/2'},
-                {name: 'WAIST BLW WB', tolerance: '1/2'},
-                {name: 'HIPS', tolerance: '1/2'},
-                {name: 'S SEAM LGHT BLW WB', tolerance: '1/4'},
-                {name: 'LEG OPEN.', tolerance: '1/4'},
-                {name: 'FRT RISE', tolerance: '1/4'},
-                {name: 'BCK RISE', tolerance: '1/4'}
+            'children-dresses': [
+                {name: 'HPS TO BTM HEM', tolerance: '1/2'},
+                {name: 'FRT LGHT CENTER', tolerance: '1/2'},
+                {name: 'BCK LGHT CENTER', tolerance: '1/2'},
+                {name: 'BUST 1" BLW AH', tolerance: '1/2'},
+                {name: 'Waist CIR.', tolerance: '1/2'},
+                {name: 'HIGH HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'LOW HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'AH CIR.', tolerance: '1/4'},
+                {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
+                {name: 'SH WIDTH', tolerance: '1/4'},
+                {name: 'SLV LGTH Frm SH SEAM', tolerance: '1/4'},
+                {name: 'SLV LGTH FM CB', tolerance: '1/4'},
+                {name: 'SLV OPEN.', tolerance: '1/4'},
+                {name: 'SLV CUFF SIZE', tolerance: '1/8'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'Zipper LGTH CB', tolerance: '1/4'},
+                {name: 'SLIT OPEN.', tolerance: '1/4'},
+                {name: 'Bottom Hem Width', tolerance: '1/2'},
+                {name: 'AH Dart LGHT', tolerance: '1/4'},
+                {name: 'BUST DART 1" BLW AH', tolerance: '1/4'},
+                {name: 'FRENCH DART Frm WB', tolerance: '1/4'},
+                {name: 'SH DART', tolerance: '1/4'}
             ],
-            'bodysuit': [
-                {name: 'CUP', tolerance: '1/4'},
-                {name: 'BUST', tolerance: '1/2'},
+            'children-shorts': [
+                {name: 'CONT. WB', tolerance: '1/2'},
+                {name: 'UPPER WB at TOP', tolerance: '1/2'},
+                {name: 'LOWER WB at SEAM', tolerance: '1/2'},
+                {name: 'STRT. WB', tolerance: '1/2'},
+                {name: 'WB HEIGHT', tolerance: '1/4'},
+                {name: 'HIGH HIP ( ) BLW WB', tolerance: '1/2'},
+                {name: 'LOW HIP ( ) UP CROT', tolerance: '1/2'},
+                {name: 'THIGHT 1" BLW CROT', tolerance: '1/2'},
+                {name: 'LEG OPENING', tolerance: '1/4'},
+                {name: 'FRT RISE', tolerance: '1/4'},
+                {name: 'BCK RISE', tolerance: '1/4'},
+                {name: 'INSEAM', tolerance: '1/2'},
+                {name: 'FRT Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'BCK Dart LGTH BLW WB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH FLY', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH CB', tolerance: '1/4'},
+                {name: 'ZIPPER LGTH S. SEAM', tolerance: '1/4'},
+                {name: 'FRT PKT OPENING', tolerance: '1/4'},
+                {name: 'FRT PKT LGHT', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT BLW WB', tolerance: '1/4'},
+                {name: 'BCK PKT PLMT Frm CB', tolerance: '1/4'},
+                {name: 'BCK PKT OPENING', tolerance: '1/4'},
+                {name: 'BCK PKT LENGTH', tolerance: '1/4'}
+            ],
+            
+            // Other/Unisex garments
+            'unisex-outerwear': [
+                {name: 'NECK LINE CIR.', tolerance: '1/4'},
+                {name: 'CHEST 1" BLW AH', tolerance: '1/2'},
                 {name: 'WAIST', tolerance: '1/2'},
-                {name: 'HIP', tolerance: '1/2'},
-                {name: 'S SEAM LGHT', tolerance: '1/2'},
-                {name: 'CROTCH WIDTH at OPEN.', tolerance: '1/4'},
+                {name: 'BTM HEM /HIP', tolerance: '1/2'},
+                {name: 'FRT LGHT HPS.', tolerance: '1/2'},
+                {name: 'BCK LGHT CB.', tolerance: '1/2'},
+                {name: 'ACROSS SH BCK', tolerance: '1/4'},
                 {name: 'SH LGHT', tolerance: '1/4'},
                 {name: 'SLV LGHT CB.', tolerance: '1/4'},
                 {name: 'AH CIR.', tolerance: '1/4'},
                 {name: 'AH DROP FM SH SLANT', tolerance: '1/4'},
-                {name: 'SLV OPEN.', tolerance: '1/4'}
-            ],
-            'bikini': [
-                {name: 'CUP', tolerance: '1/4'},
-                {name: 'BUST', tolerance: '1/2'},
-                {name: 'WAIST', tolerance: '1/2'},
-                {name: 'HIP', tolerance: '1/2'}
-            ],
-            'bikini-set': [
-                {name: 'CUP', tolerance: '1/4'},
-                {name: 'BUST', tolerance: '1/2'},
-                {name: 'WAIST', tolerance: '1/2'},
-                {name: 'HIP', tolerance: '1/2'}
+                {name: 'SLV OPEN.', tolerance: '1/4'},
+                {name: 'SLV CUFF WIDTH', tolerance: '1/8'},
+                {name: 'SLV CUFF HEIGHT', tolerance: '1/8'},
+                {name: 'NECK WIDTH', tolerance: '1/8'},
+                {name: 'FRT NECK DROP', tolerance: '1/8'},
+                {name: 'BCK NECK DROP', tolerance: '1/8'},
+                {name: 'TOP COL. WIDTH CB', tolerance: '1/8'},
+                {name: 'TOP COL. POINT WIDTH', tolerance: '1/8'},
+                {name: 'TOP COL ( ) SPREAD', tolerance: '1/8'},
+                {name: 'STND COL WIDTH', tolerance: '1/8'},
+                {name: 'FRT PKT LEGHT', tolerance: '1/4'},
+                {name: 'FRT PKT WIDHT', tolerance: '1/4'}
             ],
             'overall': [
                 {name: 'MAX. STRAP LGHT', tolerance: '1/2'},
@@ -1399,11 +1802,24 @@
                 {name: 'BOOT HEIGHT', tolerance: '1/4'},
                 {name: 'INSOLE LGHT', tolerance: '1/4'},
                 {name: 'INSOLE WIDHT', tolerance: '1/4'}
+            ],
+            'bikini': [
+                {name: 'CUP', tolerance: '1/4'},
+                {name: 'BUST', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'HIP', tolerance: '1/2'}
+            ],
+            'bikini-set': [
+                {name: 'CUP', tolerance: '1/4'},
+                {name: 'BUST', tolerance: '1/2'},
+                {name: 'WAIST', tolerance: '1/2'},
+                {name: 'HIP', tolerance: '1/2'}
             ]
         };
 
         // Core POMs for each garment type (essential measurements for grading)
         const CORE_POMS = {
+            // Women's garments
             'tops': [
                 'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
                 'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
@@ -1414,7 +1830,7 @@
                 'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
                 'SLV LGHT CB.', 'AH CIR.'
             ],
-            'jackets': [
+            'jacket': [
                 'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
                 'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
                 'SLV LGHT CB.', 'AH CIR.'
@@ -1429,6 +1845,10 @@
                 'THIGHT 1" BLW CROT', 'KNEE ( ) BLW CROT', 'LEG OPENING',
                 'FRT RISE', 'BCK RISE', 'INSEAM'
             ],
+            'skirts': [
+                'CONT. WB', 'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) BLW WB',
+                'S. SEAM LGTH', 'HEM SWEEP'
+            ],
             'dresses': [
                 'HPS TO BTM HEM', 'BUST 1" BLW AH', 'Waist CIR.',
                 'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) BLW WB', 'AH CIR.',
@@ -1439,10 +1859,6 @@
                 'THIGHT 1" BLW CROT', 'LEG OPENING', 'FRT RISE',
                 'BCK RISE', 'INSEAM'
             ],
-            'skirts': [
-                'CONT. WB', 'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) BLW WB',
-                'S. SEAM LGTH', 'HEM SWEEP'
-            ],
             'underwear': [
                 'ELASTIC WAIST LGHT', 'WAIST BLW WB', 'HIPS',
                 'S SEAM LGHT BLW WB', 'LEG OPEN.', 'FRT RISE', 'BCK RISE'
@@ -1451,11 +1867,84 @@
                 'CUP', 'BUST', 'WAIST', 'HIP', 'S SEAM LGHT',
                 'SH LGHT', 'SLV LGHT CB.', 'AH CIR.'
             ],
-            'bikini': [
-                'CUP', 'BUST', 'WAIST', 'HIP'
+            
+            // Men's garments
+            'men-tops': [
+                'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
+                'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
+                'SLV LGHT CB.', 'AH CIR.'
             ],
-            'bikini-set': [
-                'CUP', 'BUST', 'WAIST', 'HIP'
+            'men-shirts': [
+                'CHEST 1" BLW AH', 'WAIST', 'BTM HEM/HIP',
+                'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
+                'SLV LGHT CB.', 'AH CIR.'
+            ],
+            'casual-jacket': [
+                'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
+                'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
+                'SLV LGHT CB.', 'AH CIR.'
+            ],
+            'suit-jacket': [
+                'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
+                'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
+                'SLV LGHT CB.', 'AH CIR.'
+            ],
+            'men-outerwear': [
+                'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
+                'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
+                'SLV LGHT CB.', 'AH CIR.'
+            ],
+            'men-pants': [
+                'CONT. WB', 'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) UP CROT',
+                'THIGHT 1" BLW CROT', 'KNEE ( ) BLW CROT', 'LEG OPENING',
+                'FRT RISE', 'BCK RISE', 'INSEAM'
+            ],
+            'men-shorts': [
+                'CONT. WB', 'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) UP CROT',
+                'THIGHT 1" BLW CROT', 'LEG OPENING', 'FRT RISE',
+                'BCK RISE', 'INSEAM'
+            ],
+            'men-underwear': [
+                'ELASTIC WAIST LGHT', 'WAIST BLW WB', 'HIPS',
+                'S SEAM LGHT BLW WB', 'LEG OPEN.', 'FRT RISE', 'BCK RISE'
+            ],
+            
+            // Children's garments
+            'children-tops': [
+                'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
+                'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
+                'SLV LGHT CB.', 'AH CIR.'
+            ],
+            'children-jacket': [
+                'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
+                'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
+                'SLV LGHT CB.', 'AH CIR.'
+            ],
+            'children-pants': [
+                'CONT. WB', 'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) UP CROT',
+                'THIGHT 1" BLW CROT', 'KNEE ( ) BLW CROT', 'LEG OPENING',
+                'FRT RISE', 'BCK RISE', 'INSEAM'
+            ],
+            'children-skirts': [
+                'CONT. WB', 'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) BLW WB',
+                'S. SEAM LGTH', 'HEM SWEEP'
+            ],
+            'children-dresses': [
+                'HPS TO BTM HEM', 'BUST 1" BLW AH', 'Waist CIR.',
+                'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) BLW WB', 'AH CIR.',
+                'SH WIDTH', 'SLV LGTH Frm SH SEAM'
+            ],
+            'children-shorts': [
+                'CONT. WB', 'HIGH HIP ( ) BLW WB', 'LOW HIP ( ) UP CROT',
+                'THIGHT 1" BLW CROT', 'LEG OPENING', 'FRT RISE',
+                'BCK RISE', 'INSEAM'
+            ],
+            
+            // Other/Unisex garments
+            'unisex-outerwear': [
+                'CHEST 1" BLW AH', 'WAIST', 'BTM HEM /HIP',
+                'FRT LGHT HPS.', 'BCK LGHT CB.', 'SH LGHT',
+                'SLV LGHT CB.', 'AH CIR.'
             ],
             'overall': [
                 'MAX. STRAP LGHT', 'BIB LGHT', 'WAIST',
@@ -1466,6 +1955,12 @@
                 'TOTAL LEGHT', 'CHEST 1" BLW AH', 'WAIST',
                 'HIGH HIP ( ) BLW WB', 'SLV LGHT CB.',
                 'THIGHT 1" BLW CROT', 'LEG OPENING', 'FRT RISE', 'BCK RISE', 'INSEAM'
+            ],
+            'bikini': [
+                'CUP', 'BUST', 'WAIST', 'HIP'
+            ],
+            'bikini-set': [
+                'CUP', 'BUST', 'WAIST', 'HIP'
             ]
         };
 
@@ -1473,7 +1968,7 @@
         let currentBaseSize = '';
         let nextCustomSizeIndex = 1;
         let currentSizeSystem = '';
-        let currentGarmentType = 'tops';
+        let currentGarmentType = '';
         let currentPoms = [];
         let draggedRow = null;
         let crossBar = null;
@@ -1482,15 +1977,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             const sizeSelect = document.getElementById('base-size-select');
             sizeSelect.addEventListener('change', changeBaseSize);
-            
-            // Initialize with default values
-            updateSizeCategories();
-            
-            // Initialize the garment type change listener
-            document.getElementById('garment-type').addEventListener('change', updateSizeCategories);
-            
-            // Initialize the table with default sizes
-            updateSizeHeaders();
             
             // Get cross bar element
             crossBar = document.getElementById('cross-bar');
@@ -1505,6 +1991,12 @@
                     }
                 }
             });
+            
+            // Initialize with default values
+            updateSizeCategories();
+            
+            // Initialize the table with default sizes
+            updateSizeHeaders();
         });
         
         // --- Garment Type and Size Category Management ---
